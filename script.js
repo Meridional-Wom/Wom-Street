@@ -1,22 +1,88 @@
 const CODIGO_LIDER = "WSCHILOE2026";
+const API_URL = "https://script.google.com/macros/s/AKfycbxP2L869vhRVma1iNcwDEY8sV8X7OunPWuve4ot0BDr3v9fJFZmvhvZWjo2suF3cJsKdw/exec";
+
 let datos = {};
 
 async function iniciar(){
-  const guardado = localStorage.getItem("womStreetDatos");
+  try{
+    const res = await fetch(API_URL + "?t=" + Date.now());
+    const data = await res.json();
 
-  if(guardado){
-    datos = JSON.parse(guardado);
-  }else{
-    const res = await fetch("datos.json");
-    datos = await res.json();
+    datos = transformarDatos(data);
+    renderTodo();
+
+  }catch(error){
+    console.error(error);
+    alert("No se pudieron cargar los datos desde Google Sheets.");
   }
+}
 
-  renderTodo();
+function transformarDatos(data){
+  const dashboard = data.dashboard || {};
+
+  return {
+    ultima_actualizacion: dashboard["Última actualización"] || "",
+
+    dashboard: {
+      ventas_dia: Number(dashboard["Ventas día"] || 0),
+      meta_dia: Number(dashboard["Meta día"] || 0),
+      ventas_mtd: Number(dashboard["Ventas MTD"] || 0),
+      meta_mes: Number(dashboard["Meta mes"] || 0),
+      fcst: Number(dashboard["FCST"] || 0)
+    },
+
+    equipo: (data.equipo || []).map(e => ({
+      nombre: e["Ejecutivo"] || "",
+      ventas_dia: Number(e["Ventas Día"] || 0),
+      mtd: Number(e["Ventas MTD"] || 0),
+      meta: Number(e["Meta Mes"] || 0),
+      observacion: e["Observación"] || ""
+    })),
+
+    avisos: (data.avisos || []).map(a => ({
+      titulo: a["Título"] || "",
+      descripcion: a["Descripción"] || ""
+    })),
+
+    biblioteca: (data.biblioteca || []).map(b => ({
+      titulo: b["Título"] || "",
+      descripcion: b["Descripción"] || "",
+      url: b["Link"] || "#"
+    })),
+
+    publicidad: (data.publicidad || []).map(p => ({
+      titulo: p["Título"] || "",
+      descripcion: p["Descripción"] || "",
+      url: p["Link"] || "#"
+    })),
+
+    links: (data.links || []).map(l => ({
+      nombre: l["Nombre"] || "",
+      categoria: l["Categoría"] || "",
+      url: l["URL"] || "#"
+    })),
+
+    rutas: (data.rutas || []).map(r => ({
+      dia: r["Día"] || "",
+      sector: r["Sector"] || "",
+      responsable: r["Responsable"] || ""
+    })),
+
+    reembolsos: (data.reembolsos || []).map(r => ({
+      ejecutivo: r["Ejecutivo"] || "",
+      monto: r["Monto"] || "",
+      estado: r["Estado"] || ""
+    }))
+  };
 }
 
 function mostrar(id){
-  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".section").forEach(s => {
+    s.classList.remove("active");
+  });
+
   document.getElementById(id).classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function validarCodigo(){
@@ -34,7 +100,7 @@ function validarCodigo(){
 }
 
 function porcentaje(valor, meta){
-  if(!meta) return 0;
+  if(!meta || meta === 0) return 0;
   return Math.round((valor / meta) * 100);
 }
 
@@ -133,6 +199,7 @@ function renderEquipo(){
         <div class="person-name">${e.nombre}</div>
         <span class="badge ${color(e.cumplimiento)}">${estado(e.cumplimiento)}</span>
       </div>
+
       <div class="person-grid">
         <div class="mini"><span>Hoy</span><strong>${e.ventas_dia}</strong></div>
         <div class="mini"><span>MTD</span><strong>${e.mtd}</strong></div>
@@ -189,12 +256,14 @@ function renderPrivado(){
         <div class="person-name">${e.nombre}</div>
         <span class="badge ${color(e.cumplimiento)}">${estado(e.cumplimiento)}</span>
       </div>
+
       <div class="person-grid">
         <div class="mini"><span>Hoy</span><strong>${e.ventas_dia}</strong></div>
         <div class="mini"><span>MTD</span><strong>${e.mtd}</strong></div>
         <div class="mini"><span>Meta</span><strong>${e.meta}</strong></div>
         <div class="mini"><span>GAP</span><strong>${e.gap}</strong></div>
       </div>
+
       <p>${e.observacion}</p>
     </div>
   `).join("");
@@ -218,6 +287,7 @@ function renderPrivado(){
 
 function cargarFormulario(){
   const d = datos.dashboard;
+
   document.getElementById("formVentasDia").value = d.ventas_dia;
   document.getElementById("formMetaDia").value = d.meta_dia;
   document.getElementById("formVentasMTD").value = d.ventas_mtd;
@@ -226,21 +296,10 @@ function cargarFormulario(){
 }
 
 function guardarIndicadores(){
-  datos.dashboard.ventas_dia = Number(document.getElementById("formVentasDia").value);
-  datos.dashboard.meta_dia = Number(document.getElementById("formMetaDia").value);
-  datos.dashboard.ventas_mtd = Number(document.getElementById("formVentasMTD").value);
-  datos.dashboard.meta_mes = Number(document.getElementById("formMetaMes").value);
-  datos.dashboard.fcst = Number(document.getElementById("formFcst").value);
-
-  datos.ultima_actualizacion = new Date().toLocaleString("es-CL");
-
-  localStorage.setItem("womStreetDatos", JSON.stringify(datos));
-  renderTodo();
-  alert("Datos actualizados en este dispositivo.");
+  alert("Por ahora los datos se actualizan desde Google Sheets. La escritura desde la web la agregamos en el siguiente paso.");
 }
 
 function resetearDatos(){
-  localStorage.removeItem("womStreetDatos");
   location.reload();
 }
 
