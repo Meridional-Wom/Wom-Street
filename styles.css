@@ -49,11 +49,32 @@ body{
   opacity:.9;
 }
 
+.header-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
 .update{
   background:rgba(255,255,255,.16);
   padding:10px 14px;
   border-radius:999px;
   font-size:13px;
+}
+
+.refresh-btn{
+  background:white;
+  color:var(--morado);
+  border:none;
+  padding:10px 14px;
+  border-radius:999px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.refresh-btn:hover{
+  background:#efe8ff;
 }
 
 .nav{
@@ -190,7 +211,9 @@ h2,h3{
 .red{
   background:#ffe4e6;
   color:#9f1239;
-}#loader{
+}
+
+#loader{
   position:fixed;
   inset:0;
   background:linear-gradient(135deg,#35108f,#571ed1);
@@ -377,9 +400,12 @@ a{
     font-size:24px;
   }
 
+  .header-actions{
+    margin-top:12px;
+  }
+
   .update{
     display:inline-block;
-    margin-top:12px;
   }
 
   main{
