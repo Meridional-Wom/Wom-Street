@@ -165,8 +165,18 @@ function renderTodo(){
 }
 
 function renderHeader(){
+  const ahora = new Date();
+
+  const fecha =
+    ahora.toLocaleDateString("es-CL") +
+    " " +
+    ahora.toLocaleTimeString("es-CL", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
   document.getElementById("ultimaActualizacion").textContent =
-    "Última actualización: " + (datos.ultima_actualizacion || "Sin información");
+    "Actualizado: " + fecha;
 }
 
 function kpi(titulo, valor, subtitulo, progreso){
