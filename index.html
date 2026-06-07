@@ -8,12 +8,23 @@
 </head>
 <body>
 
+<div id="loader">
+  <div class="loader-card">
+    <div class="loader-logo">WOM</div>
+    <h2>Street Chiloé</h2>
+    <p>Sincronizando datos comerciales...</p>
+    <div class="loader-bar">
+      <span></span>
+    </div>
+  </div>
+</div>
+
 <header class="header">
   <div>
     <h1>WOM <span>Street Chiloé</span></h1>
     <p>Panel comercial y operativo</p>
   </div>
-  <div class="update" id="ultimaActualizacion">Actualizando...</div>
+  <div class="update" id="ultimaActualizacion">Sincronizando...</div>
 </header>
 
 <nav class="nav">
@@ -96,7 +107,7 @@
       <button onclick="guardarIndicadores()">Guardar cambios</button>
       <button class="secondary" onclick="resetearDatos()">Restablecer datos</button>
 
-      <p class="note">Los cambios quedan guardados solo en este dispositivo. Luego se puede conectar Google Sheets.</p>
+      <p class="note">Los cambios se sincronizarán con Google Sheets en la siguiente etapa.</p>
     </div>
 
     <h3>Ventas individuales</h3>
