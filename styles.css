@@ -190,6 +190,62 @@ h2,h3{
 .red{
   background:#ffe4e6;
   color:#9f1239;
+}#loader{
+  position:fixed;
+  inset:0;
+  background:linear-gradient(135deg,#35108f,#571ed1);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  color:white;
+  transition:opacity .4s ease;
+}
+
+.loader-card{
+  text-align:center;
+  padding:32px;
+}
+
+.loader-logo{
+  font-size:44px;
+  font-weight:900;
+  letter-spacing:-2px;
+  margin-bottom:6px;
+}
+
+.loader-card h2{
+  color:white;
+  margin:0 0 8px;
+  font-size:26px;
+}
+
+.loader-card p{
+  margin:0;
+  opacity:.9;
+}
+
+.loader-bar{
+  width:230px;
+  height:6px;
+  background:rgba(255,255,255,.25);
+  border-radius:999px;
+  overflow:hidden;
+  margin:22px auto 0;
+}
+
+.loader-bar span{
+  display:block;
+  height:100%;
+  width:45%;
+  background:white;
+  border-radius:999px;
+  animation:loadingMove 1s infinite;
+}
+
+@keyframes loadingMove{
+  0%{transform:translateX(-100%);}
+  100%{transform:translateX(250%);}
 }
 
 .team-list{
