@@ -45,6 +45,11 @@
     <p>Seguimiento diario del avance comercial WOM Street Chiloé.</p>
   </div>
 
+  <div class="share-buttons">
+    <button onclick="generarImagenAvanceDia()">📤 Generar Avance</button>
+    <button onclick="generarImagenAvanceMensual()">📤 Generar Avance Mensual</button>
+  </div>
+
   <h3>Gestión diaria</h3>
   <div class="grid" id="kpisDia"></div>
 
@@ -109,7 +114,7 @@
       <button onclick="guardarIndicadores()">Guardar cambios</button>
       <button class="secondary" onclick="resetearDatos()">Restablecer datos</button>
 
-      <p class="note">Por ahora los cambios se actualizan desde Google Sheets.</p>
+      <p class="note">Por ahora los datos se actualizan desde Google Sheets.</p>
     </div>
 
     <h3>Ventas individuales</h3>
@@ -125,6 +130,9 @@
 
 </main>
 
+<div id="shareArea"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
