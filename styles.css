@@ -297,19 +297,19 @@ a{
   text-decoration:none;
 }
 
-.private-panel{
-  animation:fade .2s ease-in;
-}
-
 .share-buttons{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
-  margin-bottom:20px;
+  margin-top:14px;
 }
 
 .share-buttons button{
   background:linear-gradient(135deg,var(--morado),var(--morado2));
+}
+
+.report-panel{
+  border:1px solid #eadfff;
 }
 
 #loader{
@@ -372,10 +372,12 @@ a{
 
 .share-card{
   width:1080px;
-  min-height:1350px;
-  background:linear-gradient(135deg,#35108f,#571ed1);
+  min-height:1080px;
+  background:
+    radial-gradient(circle at top right, rgba(255,47,147,.35), transparent 35%),
+    linear-gradient(135deg,#25006d,#4b12c7 55%,#6f27ff);
   color:white;
-  padding:70px;
+  padding:64px;
   position:absolute;
   left:-9999px;
   top:0;
@@ -384,71 +386,145 @@ a{
 .share-inner{
   background:white;
   color:#161226;
-  border-radius:42px;
-  padding:55px;
-  box-shadow:0 25px 60px rgba(0,0,0,.25);
+  border-radius:46px;
+  padding:58px;
+  box-shadow:0 30px 70px rgba(0,0,0,.28);
+  min-height:880px;
+  display:flex;
+  flex-direction:column;
+}
+
+.share-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:30px;
+  border-bottom:2px solid #eee9f8;
+  padding-bottom:24px;
 }
 
 .share-brand{
-  font-size:38px;
+  font-size:34px;
   font-weight:900;
   color:#35108f;
+  letter-spacing:-1px;
+}
+
+.share-label{
+  font-size:18px;
+  font-weight:900;
+  color:#ff2f93;
+  text-transform:uppercase;
+  letter-spacing:2px;
   margin-bottom:8px;
 }
 
-.share-title{
-  font-size:64px;
-  font-weight:900;
-  color:#35108f;
-  margin:20px 0 5px;
+.share-time{
+  font-size:26px;
+  color:#706989;
+  text-align:right;
+  font-weight:700;
 }
 
-.share-time{
-  font-size:30px;
-  color:#706989;
-  margin-bottom:30px;
+.share-title{
+  font-size:62px;
+  line-height:1;
+  font-weight:900;
+  color:#35108f;
+  margin:34px 0 18px;
+  letter-spacing:-2px;
 }
 
 .share-main{
-  text-align:center;
-  margin:35px 0;
+  background:#f7f3ff;
+  border-radius:34px;
+  padding:30px 34px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:26px;
+  margin-bottom:30px;
 }
 
-.share-main .big{
-  font-size:96px;
-  font-weight:900;
+.share-main-title{
+  color:#706989;
+  font-size:24px;
+  font-weight:800;
+}
+
+.share-main-number{
   color:#35108f;
+  font-size:78px;
+  font-weight:900;
+  line-height:1;
 }
 
-.share-main .percent{
-  font-size:72px;
-  font-weight:900;
+.share-percent{
   color:#ff2f93;
-  margin-top:10px;
+  font-size:58px;
+  font-weight:900;
+  text-align:right;
+}
+
+.share-percent small{
+  display:block;
+  color:#706989;
+  font-size:18px;
+  font-weight:800;
+  margin-top:4px;
+}
+
+.share-subline{
+  font-size:26px;
+  color:#161226;
+  font-weight:800;
+  text-align:right;
+}
+
+.share-section-title{
+  color:#35108f;
+  font-size:26px;
+  font-weight:900;
+  margin:12px 0 10px;
 }
 
 .share-list{
-  margin-top:35px;
+  margin-top:4px;
 }
 
 .share-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  border-bottom:2px solid #eee;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:20px;
+  border-bottom:2px solid #f0edf7;
   padding:18px 0;
-  font-size:34px;
+  font-size:30px;
+  align-items:center;
+}
+
+.share-row span{
+  color:#161226;
 }
 
 .share-row strong{
   color:#35108f;
+  font-weight:900;
 }
 
 .share-footer{
-  margin-top:40px;
-  font-size:26px;
+  margin-top:auto;
+  padding-top:28px;
+  border-top:2px solid #eee9f8;
+  font-size:24px;
   color:#706989;
-  text-align:center;
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  font-weight:800;
+}
+
+.private-panel{
+  animation:fade .2s ease-in;
 }
 
 @keyframes fade{
