@@ -13,9 +13,7 @@
     <div class="loader-logo">WOM</div>
     <h2>Street Chiloé</h2>
     <p>Sincronizando datos comerciales...</p>
-    <div class="loader-bar">
-      <span></span>
-    </div>
+    <div class="loader-bar"><span></span></div>
   </div>
 </div>
 
@@ -24,7 +22,11 @@
     <h1>WOM <span>Street Chiloé</span></h1>
     <p>Panel comercial y operativo</p>
   </div>
-  <div class="update" id="ultimaActualizacion">Sincronizando...</div>
+
+  <div class="header-actions">
+    <div class="update" id="ultimaActualizacion">Sincronizando...</div>
+    <button class="refresh-btn" onclick="actualizarDatos()">🔄 Actualizar</button>
+  </div>
 </header>
 
 <nav class="nav">
@@ -107,7 +109,7 @@
       <button onclick="guardarIndicadores()">Guardar cambios</button>
       <button class="secondary" onclick="resetearDatos()">Restablecer datos</button>
 
-      <p class="note">Los cambios se sincronizarán con Google Sheets en la siguiente etapa.</p>
+      <p class="note">Por ahora los cambios se actualizan desde Google Sheets.</p>
     </div>
 
     <h3>Ventas individuales</h3>
