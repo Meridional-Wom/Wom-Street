@@ -1,12 +1,144 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<title>WOM Street Chiloé</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WOM Street Chiloé</title>
+  <link rel="stylesheet" href="estilos.css" />
 </head>
 <body>
 
-<h1>WOM Street Chiloé</h1>
-<p>Dashboard en construcción.</p>
+<header class="topbar">
+  <div>
+    <h1>WOM Street Chiloé</h1>
+    <p>Panel comercial y operativo</p>
+  </div>
+  <span id="ultimaActualizacion">Actualizando...</span>
+</header>
 
+<nav class="menu">
+  <button onclick="mostrar('inicio')">🏠 Inicio</button>
+  <button onclick="mostrar('biblioteca')">📚 Biblioteca</button>
+  <button onclick="mostrar('publicidad')">📢 Publicidad</button>
+  <button onclick="mostrar('links')">🔗 Links</button>
+  <button onclick="mostrar('lider')">🔒 Líder</button>
+</nav>
+
+<main>
+
+<section id="inicio" class="seccion activa">
+  <div class="hero">
+    <h2>¡Vamos por más!</h2>
+    <p>Seguimiento diario del avance comercial WOM Street Chiloé.</p>
+  </div>
+
+  <h2>📊 Gestión diaria</h2>
+  <div id="kpisDia" class="grid"></div>
+
+  <h2>🎯 Avance del mes</h2>
+  <div id="kpisMes" class="grid"></div>
+
+  <h2>📈 Proyección</h2>
+  <div id="kpisForecast" class="grid"></div>
+
+  <h2>👥 Estado del equipo</h2>
+  <div class="card tabla-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Ejecutivo</th>
+          <th>Hoy</th>
+          <th>MTD</th>
+          <th>Meta</th>
+          <th>%</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="tablaEquipo"></tbody>
+    </table>
+  </div>
+
+  <h2>📌 Avisos importantes</h2>
+  <div id="avisosLista" class="grid"></div>
+</section>
+
+<section id="biblioteca" class="seccion">
+  <h2>📚 Biblioteca</h2>
+  <div id="bibliotecaLista" class="grid"></div>
+</section>
+
+<section id="publicidad" class="seccion">
+  <h2>📢 Publicidad</h2>
+  <div id="publicidadLista" class="grid"></div>
+</section>
+
+<section id="links" class="seccion">
+  <h2>🔗 Zona de Links</h2>
+  <div id="linksLista" class="grid"></div>
+</section>
+
+<section id="lider" class="seccion">
+  <div id="loginLider" class="card login">
+    <h2>🔒 Acceso Líder</h2>
+    <p>Ingresa el código de acceso.</p>
+    <input type="password" id="codigo" placeholder="Código líder" />
+    <button onclick="validarCodigo()">Ingresar</button>
+    <p id="error"></p>
+  </div>
+
+  <div id="panelLider" class="oculto">
+    <h2>Panel Líder</h2>
+
+    <div class="card">
+      <h3>📊 Actualizar indicadores</h3>
+
+      <label>Ventas del día</label>
+      <input id="formVentasDia" type="number" />
+
+      <label>Meta diaria</label>
+      <input id="formMetaDia" type="number" />
+
+      <label>Ventas MTD</label>
+      <input id="formVentasMTD" type="number" />
+
+      <label>Meta mensual</label>
+      <input id="formMetaMes" type="number" />
+
+      <label>FCST</label>
+      <input id="formFcst" type="number" />
+
+      <button onclick="guardarIndicadores()">💾 Guardar cambios</button>
+      <p class="nota">Los cambios quedan guardados en este dispositivo. Más adelante se conectará Google Sheets.</p>
+    </div>
+
+    <h3>👥 Ventas individuales</h3>
+    <div class="card tabla-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Ejecutivo</th>
+            <th>Hoy</th>
+            <th>MTD</th>
+            <th>Meta</th>
+            <th>GAP</th>
+            <th>%</th>
+            <th>Observación</th>
+          </tr>
+        </thead>
+        <tbody id="tablaLider"></tbody>
+      </table>
+    </div>
+
+    <h3>🚗 Rutas</h3>
+    <div id="rutasLista" class="grid"></div>
+
+    <h3>💰 Reembolsos</h3>
+    <div id="reembolsosLista" class="grid"></div>
+  </div>
+</section>
+
+</main>
+
+<script src="script.js"></script>
 </body>
 </html>
