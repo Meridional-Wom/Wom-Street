@@ -1,4 +1,12 @@
-const CODIGO_LIDER = "WSCHILOE2026";
+function ocultarLoader(){
+  const loader = document.getElementById("loader");
+  if(loader){
+    loader.style.opacity = "0";
+    setTimeout(() => {
+      loader.style.display = "none";
+    }, 400);
+  }
+}const CODIGO_LIDER = "WSCHILOE2026";
 const API_URL = "https://script.google.com/macros/s/AKfycbxP2L869vhRVma1iNcwDEY8sV8X7OunPWuve4ot0BDr3v9fJFZmvhvZWjo2suF3cJsKdw/exec";
 
 let datos = {};
