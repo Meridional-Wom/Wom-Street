@@ -2,32 +2,30 @@ const CODIGO_LIDER = "WSCHILOE2026";
 let datos = {};
 
 async function iniciar(){
-  const datosGuardados = localStorage.getItem("womStreetDatos");
+  const guardado = localStorage.getItem("womStreetDatos");
 
-  if(datosGuardados){
-    datos = JSON.parse(datosGuardados);
+  if(guardado){
+    datos = JSON.parse(guardado);
   }else{
-    const respuesta = await fetch("datos.json");
-    datos = await respuesta.json();
+    const res = await fetch("datos.json");
+    datos = await res.json();
   }
 
-  renderizarTodo();
+  renderTodo();
 }
 
 function mostrar(id){
-  document.querySelectorAll(".seccion").forEach(sec => {
-    sec.classList.remove("activa");
-  });
-  document.getElementById(id).classList.add("activa");
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 }
 
 function validarCodigo(){
-  const codigo = document.getElementById("codigo").value;
+  const codigo = document.getElementById("codigo").value.trim();
   const error = document.getElementById("error");
 
   if(codigo === CODIGO_LIDER){
-    document.getElementById("loginLider").style.display = "none";
-    document.getElementById("panelLider").classList.remove("oculto");
+    document.getElementById("loginLider").classList.add("hidden");
+    document.getElementById("panelLider").classList.remove("hidden");
     error.textContent = "";
     cargarFormulario();
   }else{
@@ -36,39 +34,30 @@ function validarCodigo(){
 }
 
 function porcentaje(valor, meta){
-  if(!meta || meta === 0) return 0;
+  if(!meta) return 0;
   return Math.round((valor / meta) * 100);
 }
 
-function colorEstado(p){
-  if(p >= 90) return "verde";
-  if(p >= 60) return "amarillo";
-  return "rojo";
+function color(p){
+  if(p >= 90) return "green";
+  if(p >= 60) return "yellow";
+  return "red";
 }
 
-function textoEstado(p){
+function estado(p){
   if(p >= 90) return "Sobre meta";
   if(p >= 60) return "En riesgo";
   return "Bajo meta";
 }
 
-function renderizarTodo(){
-  calcularIndicadores();
-  renderHeader();
-  renderKpis();
-  renderEquipo();
-  renderAvisos();
-  renderBiblioteca();
-  renderPublicidad();
-  renderLinks();
-  renderLider();
-}
+function calcular(){
+  const d = datos.dashboard;
 
-function calcularIndicadores(){
-  datos.dashboard.cumplimiento_dia = porcentaje(datos.dashboard.ventas_dia, datos.dashboard.meta_dia);
-  datos.dashboard.cumplimiento_mes = porcentaje(datos.dashboard.ventas_mtd, datos.dashboard.meta_mes);
-  datos.dashboard.gap = datos.dashboard.ventas_mtd - datos.dashboard.meta_mes;
-  datos.dashboard.diferencia_fcst = datos.dashboard.fcst - datos.dashboard.meta_mes;
+  d.cumplimiento_dia = porcentaje(d.ventas_dia, d.meta_dia);
+  d.cumplimiento_mes = porcentaje(d.ventas_mtd, d.meta_mes);
+  d.gap = d.ventas_mtd - d.meta_mes;
+  d.diferencia_fcst = d.fcst - d.meta_mes;
+  d.estado_fcst = porcentaje(d.fcst, d.meta_mes);
 
   datos.equipo.forEach(e => {
     e.cumplimiento = porcentaje(e.mtd, e.meta);
@@ -76,27 +65,33 @@ function calcularIndicadores(){
   });
 }
 
+function renderTodo(){
+  calcular();
+  renderHeader();
+  renderKpis();
+  renderEquipo();
+  renderAvisos();
+  renderBiblioteca();
+  renderPublicidad();
+  renderLinks();
+  renderPrivado();
+}
+
 function renderHeader(){
   document.getElementById("ultimaActualizacion").textContent =
     "Última actualización: " + datos.ultima_actualizacion;
 }
 
-function kpiCard(titulo, valor, subtitulo, progreso){
-  let barra = "";
-
-  if(progreso !== undefined){
-    barra = `
-      <div class="barra">
-        <span style="width:${Math.min(progreso,100)}%"></span>
-      </div>
-    `;
-  }
+function kpi(titulo, valor, subtitulo, progreso){
+  const barra = progreso !== undefined
+    ? `<div class="progress"><span style="width:${Math.min(progreso,100)}%"></span></div>`
+    : "";
 
   return `
     <div class="card">
-      <div class="label">${titulo}</div>
-      <div class="kpi">${valor}</div>
-      <p>${subtitulo || ""}</p>
+      <div class="kpi-title">${titulo}</div>
+      <div class="kpi-value">${valor}</div>
+      <p class="kpi-sub">${subtitulo || ""}</p>
       ${barra}
     </div>
   `;
@@ -106,50 +101,52 @@ function renderKpis(){
   const d = datos.dashboard;
 
   document.getElementById("kpisDia").innerHTML = `
-    ${kpiCard("Ventas del día", d.ventas_dia, "Gestión diaria")}
-    ${kpiCard("Meta diaria", d.meta_dia, "Objetivo del día")}
-    ${kpiCard("Cumplimiento diario", d.cumplimiento_dia + "%", textoEstado(d.cumplimiento_dia), d.cumplimiento_dia)}
+    ${kpi("Ventas del día", d.ventas_dia, "Gestión diaria")}
+    ${kpi("Meta diaria", d.meta_dia, "Objetivo del día")}
+    ${kpi("Cumplimiento diario", d.cumplimiento_dia + "%", estado(d.cumplimiento_dia), d.cumplimiento_dia)}
   `;
 
   document.getElementById("kpisMes").innerHTML = `
-    ${kpiCard("Ventas MTD", d.ventas_mtd, "Acumulado del mes")}
-    ${kpiCard("Meta mensual", d.meta_mes, "Objetivo mensual")}
-    ${kpiCard("Cumplimiento mes", d.cumplimiento_mes + "%", textoEstado(d.cumplimiento_mes), d.cumplimiento_mes)}
-    ${kpiCard("GAP", d.gap, "Diferencia contra meta")}
+    ${kpi("Ventas MTD", d.ventas_mtd, "Acumulado del mes")}
+    ${kpi("Meta mensual", d.meta_mes, "Objetivo mensual")}
+    ${kpi("Cumplimiento mes", d.cumplimiento_mes + "%", estado(d.cumplimiento_mes), d.cumplimiento_mes)}
+    ${kpi("GAP", d.gap, "Diferencia contra meta")}
   `;
 
   document.getElementById("kpisForecast").innerHTML = `
-    ${kpiCard("FCST", d.fcst, "Proyección de cierre")}
-    ${kpiCard("Diferencia FCST", d.diferencia_fcst, "Forecast vs meta")}
+    ${kpi("FCST", d.fcst, "Proyección de cierre")}
+    ${kpi("Diferencia FCST", d.diferencia_fcst, "Forecast vs meta")}
     <div class="card">
-      <div class="label">Estado de cierre</div>
-      <div class="kpi">
-        <span class="estado ${colorEstado(porcentaje(d.fcst,d.meta_mes))}">
-          ${textoEstado(porcentaje(d.fcst,d.meta_mes))}
-        </span>
+      <div class="kpi-title">Estado de cierre</div>
+      <div class="kpi-value">
+        <span class="badge ${color(d.estado_fcst)}">${estado(d.estado_fcst)}</span>
       </div>
-      <p>Según la proyección actual.</p>
+      <p class="kpi-sub">Según la proyección actual</p>
     </div>
   `;
 }
 
 function renderEquipo(){
-  document.getElementById("tablaEquipo").innerHTML = datos.equipo.map(e => `
-    <tr>
-      <td>${e.nombre}</td>
-      <td>${e.ventas_dia}</td>
-      <td>${e.mtd}</td>
-      <td>${e.meta}</td>
-      <td>${e.cumplimiento}%</td>
-      <td><span class="estado ${colorEstado(e.cumplimiento)}">${textoEstado(e.cumplimiento)}</span></td>
-    </tr>
+  document.getElementById("equipoCards").innerHTML = datos.equipo.map(e => `
+    <div class="person">
+      <div class="person-top">
+        <div class="person-name">${e.nombre}</div>
+        <span class="badge ${color(e.cumplimiento)}">${estado(e.cumplimiento)}</span>
+      </div>
+      <div class="person-grid">
+        <div class="mini"><span>Hoy</span><strong>${e.ventas_dia}</strong></div>
+        <div class="mini"><span>MTD</span><strong>${e.mtd}</strong></div>
+        <div class="mini"><span>Meta</span><strong>${e.meta}</strong></div>
+        <div class="mini"><span>Cump.</span><strong>${e.cumplimiento}%</strong></div>
+      </div>
+    </div>
   `).join("");
 }
 
 function renderAvisos(){
   document.getElementById("avisosLista").innerHTML = datos.avisos.map(a => `
     <div class="card">
-      <h3>📌 ${a.titulo}</h3>
+      <h3>${a.titulo}</h3>
       <p>${a.descripcion}</p>
     </div>
   `).join("");
@@ -185,24 +182,28 @@ function renderLinks(){
   `).join("");
 }
 
-function renderLider(){
-  document.getElementById("tablaLider").innerHTML = datos.equipo.map(e => `
-    <tr>
-      <td>${e.nombre}</td>
-      <td>${e.ventas_dia}</td>
-      <td>${e.mtd}</td>
-      <td>${e.meta}</td>
-      <td>${e.gap}</td>
-      <td>${e.cumplimiento}%</td>
-      <td>${e.observacion}</td>
-    </tr>
+function renderPrivado(){
+  document.getElementById("liderEquipo").innerHTML = datos.equipo.map(e => `
+    <div class="person">
+      <div class="person-top">
+        <div class="person-name">${e.nombre}</div>
+        <span class="badge ${color(e.cumplimiento)}">${estado(e.cumplimiento)}</span>
+      </div>
+      <div class="person-grid">
+        <div class="mini"><span>Hoy</span><strong>${e.ventas_dia}</strong></div>
+        <div class="mini"><span>MTD</span><strong>${e.mtd}</strong></div>
+        <div class="mini"><span>Meta</span><strong>${e.meta}</strong></div>
+        <div class="mini"><span>GAP</span><strong>${e.gap}</strong></div>
+      </div>
+      <p>${e.observacion}</p>
+    </div>
   `).join("");
 
   document.getElementById("rutasLista").innerHTML = datos.rutas.map(r => `
     <div class="card">
       <h3>${r.dia}</h3>
       <p>${r.sector}</p>
-      <small>Responsable: ${r.responsable}</small>
+      <small>${r.responsable}</small>
     </div>
   `).join("");
 
@@ -210,7 +211,7 @@ function renderLider(){
     <div class="card">
       <h3>${r.ejecutivo}</h3>
       <p>Monto: ${r.monto}</p>
-      <span class="estado amarillo">${r.estado}</span>
+      <span class="badge yellow">${r.estado}</span>
     </div>
   `).join("");
 }
@@ -234,8 +235,13 @@ function guardarIndicadores(){
   datos.ultima_actualizacion = new Date().toLocaleString("es-CL");
 
   localStorage.setItem("womStreetDatos", JSON.stringify(datos));
-  renderizarTodo();
+  renderTodo();
   alert("Datos actualizados en este dispositivo.");
+}
+
+function resetearDatos(){
+  localStorage.removeItem("womStreetDatos");
+  location.reload();
 }
 
 iniciar();
