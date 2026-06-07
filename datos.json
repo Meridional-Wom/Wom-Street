@@ -3,13 +3,9 @@
   "dashboard": {
     "ventas_dia": 4,
     "meta_dia": 6,
-    "cumplimiento_dia": 67,
     "ventas_mtd": 18,
     "meta_mes": 112,
-    "cumplimiento_mes": 16,
-    "gap": -94,
-    "fcst": 84,
-    "diferencia_fcst": -28
+    "fcst": 84
   },
   "equipo": [
     {
@@ -17,8 +13,6 @@
       "ventas_dia": 1,
       "mtd": 4,
       "meta": 28,
-      "cumplimiento": 14,
-      "gap": -24,
       "observacion": "Reforzar cierre diario y seguimiento de oportunidades."
     },
     {
@@ -26,8 +20,6 @@
       "ventas_dia": 1,
       "mtd": 3,
       "meta": 28,
-      "cumplimiento": 11,
-      "gap": -25,
       "observacion": "Mantener foco en zonas de mayor flujo."
     },
     {
@@ -35,8 +27,6 @@
       "ventas_dia": 1,
       "mtd": 3,
       "meta": 28,
-      "cumplimiento": 11,
-      "gap": -25,
       "observacion": "Requiere seguimiento y plan de acción."
     },
     {
@@ -44,8 +34,6 @@
       "ventas_dia": 1,
       "mtd": 8,
       "meta": 28,
-      "cumplimiento": 29,
-      "gap": -20,
       "observacion": "Buen avance comercial, mantener ritmo de gestión."
     }
   ],
@@ -57,10 +45,6 @@
     {
       "titulo": "Reunión de equipo",
       "descripcion": "Revisión semanal de avance comercial y rutas."
-    },
-    {
-      "titulo": "Capacitación",
-      "descripcion": "Revisar material comercial vigente antes de salir a terreno."
     }
   ],
   "biblioteca": [
@@ -72,11 +56,6 @@
     {
       "titulo": "Protocolos WOM Street",
       "descripcion": "Lineamientos operativos del equipo.",
-      "url": "#"
-    },
-    {
-      "titulo": "Preguntas frecuentes",
-      "descripcion": "Respuestas para objeciones comunes.",
       "url": "#"
     }
   ],
@@ -123,11 +102,6 @@
     {
       "dia": "Martes",
       "sector": "Sector alto flujo comercial",
-      "responsable": "Equipo WOM Street Chiloé"
-    },
-    {
-      "dia": "Miércoles",
-      "sector": "Puntos estratégicos definidos por líder",
       "responsable": "Equipo WOM Street Chiloé"
     }
   ],
