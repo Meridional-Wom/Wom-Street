@@ -268,14 +268,25 @@ function generarHTMLAvanceDia(){
   return `
     <div class="share-card" id="cardDia">
       <div class="share-inner">
-        <div class="share-brand">WOM STREET CHILOÉ</div>
+        <div class="share-top">
+          <div>
+            <div class="share-label">Reporte comercial</div>
+            <div class="share-brand">WOM STREET CHILOÉ</div>
+          </div>
+          <div class="share-time">${horaActual()} hrs</div>
+        </div>
+
         <div class="share-title">AVANCE</div>
-        <div class="share-time">${horaActual()} hrs</div>
 
         <div class="share-main">
-          <div class="big">${d.ventas_dia} / ${d.meta_dia}</div>
-          <div>Ventas día / Meta día</div>
+          <div>
+            <div class="share-main-title">Ventas día / Meta día</div>
+            <div class="share-main-number">${d.ventas_dia} / ${d.meta_dia}</div>
+          </div>
+          <div class="share-subline">Gestión diaria</div>
         </div>
+
+        <div class="share-section-title">Equipo</div>
 
         <div class="share-list">
           ${datos.equipo.map(e => `
@@ -286,7 +297,10 @@ function generarHTMLAvanceDia(){
           `).join("")}
         </div>
 
-        <div class="share-footer">Total equipo: ${d.ventas_dia} · Actualizado ${horaActual()} hrs</div>
+        <div class="share-footer">
+          <span>Total equipo: ${d.ventas_dia}</span>
+          <span>Actualizado ${horaActual()} hrs</span>
+        </div>
       </div>
     </div>
   `;
@@ -298,16 +312,28 @@ function generarHTMLAvanceMensual(){
   return `
     <div class="share-card" id="cardMes">
       <div class="share-inner">
-        <div class="share-brand">WOM STREET CHILOÉ</div>
+        <div class="share-top">
+          <div>
+            <div class="share-label">Reporte comercial</div>
+            <div class="share-brand">WOM STREET CHILOÉ</div>
+          </div>
+          <div class="share-time">${horaActual()} hrs</div>
+        </div>
+
         <div class="share-title">AVANCE MENSUAL</div>
-        <div class="share-time">${horaActual()} hrs</div>
 
         <div class="share-main">
-          <div class="big">${d.ventas_mtd} / ${d.meta_mes}</div>
-          <div class="percent">${d.cumplimiento_mes}%</div>
-          <div>Cumplimiento mensual</div>
-          <div style="margin-top:20px;font-size:34px;">FCST: ${d.fcst}</div>
+          <div>
+            <div class="share-main-title">Ventas MTD / Meta mensual</div>
+            <div class="share-main-number">${d.ventas_mtd} / ${d.meta_mes}</div>
+          </div>
+          <div>
+            <div class="share-percent">${d.cumplimiento_mes}%<small>Cumplimiento</small></div>
+            <div class="share-subline">FCST: ${d.fcst}</div>
+          </div>
         </div>
+
+        <div class="share-section-title">Equipo</div>
 
         <div class="share-list">
           ${datos.equipo.map(e => `
@@ -318,7 +344,10 @@ function generarHTMLAvanceMensual(){
           `).join("")}
         </div>
 
-        <div class="share-footer">Total equipo: ${d.ventas_mtd} / ${d.meta_mes} (${d.cumplimiento_mes}%)</div>
+        <div class="share-footer">
+          <span>Total equipo: ${d.ventas_mtd} / ${d.meta_mes}</span>
+          <span>${d.cumplimiento_mes}% mensual</span>
+        </div>
       </div>
     </div>
   `;
@@ -348,7 +377,7 @@ async function descargarImagen(id, nombreArchivo){
 async function generarImagenAvanceDia(){
   const area = document.getElementById("shareArea");
   area.innerHTML = generarHTMLAvanceDia();
-  await descargarImagen("cardDia","avance-dia-wom-street.png");
+  await descargarImagen("cardDia","avance-wom-street.png");
   area.innerHTML = "";
 }
 
