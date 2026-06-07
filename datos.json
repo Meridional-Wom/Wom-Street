@@ -1,5 +1,146 @@
 {
-  "ultima_actualizacion":"06-06-2026 22:00",
-  "meta_grupal":112,
-  "ventas_grupales":16
+  "ultima_actualizacion": "07-06-2026 22:30",
+  "dashboard": {
+    "ventas_dia": 4,
+    "meta_dia": 6,
+    "cumplimiento_dia": 67,
+    "ventas_mtd": 18,
+    "meta_mes": 112,
+    "cumplimiento_mes": 16,
+    "gap": -94,
+    "fcst": 84,
+    "diferencia_fcst": -28
+  },
+  "equipo": [
+    {
+      "nombre": "Sebastián Alfonso Chacón Villar",
+      "ventas_dia": 1,
+      "mtd": 4,
+      "meta": 28,
+      "cumplimiento": 14,
+      "gap": -24,
+      "observacion": "Reforzar cierre diario y seguimiento de oportunidades."
+    },
+    {
+      "nombre": "Paulina Isabel Pérez Vargas",
+      "ventas_dia": 1,
+      "mtd": 3,
+      "meta": 28,
+      "cumplimiento": 11,
+      "gap": -25,
+      "observacion": "Mantener foco en zonas de mayor flujo."
+    },
+    {
+      "nombre": "Julieth Isabel Orozco Herrera",
+      "ventas_dia": 1,
+      "mtd": 3,
+      "meta": 28,
+      "cumplimiento": 11,
+      "gap": -25,
+      "observacion": "Requiere seguimiento y plan de acción."
+    },
+    {
+      "nombre": "Johanna Paola Varas Lagos",
+      "ventas_dia": 1,
+      "mtd": 8,
+      "meta": 28,
+      "cumplimiento": 29,
+      "gap": -20,
+      "observacion": "Buen avance comercial, mantener ritmo de gestión."
+    }
+  ],
+  "avisos": [
+    {
+      "titulo": "Cierre diario",
+      "descripcion": "Actualizar ventas antes de las 19:00 hrs."
+    },
+    {
+      "titulo": "Reunión de equipo",
+      "descripcion": "Revisión semanal de avance comercial y rutas."
+    },
+    {
+      "titulo": "Capacitación",
+      "descripcion": "Revisar material comercial vigente antes de salir a terreno."
+    }
+  ],
+  "biblioteca": [
+    {
+      "titulo": "Argumentario de venta",
+      "descripcion": "Guía rápida para abordar clientes en terreno.",
+      "url": "#"
+    },
+    {
+      "titulo": "Protocolos WOM Street",
+      "descripcion": "Lineamientos operativos del equipo.",
+      "url": "#"
+    },
+    {
+      "titulo": "Preguntas frecuentes",
+      "descripcion": "Respuestas para objeciones comunes.",
+      "url": "#"
+    }
+  ],
+  "publicidad": [
+    {
+      "titulo": "Campaña vigente",
+      "descripcion": "Material comercial para difusión en terreno.",
+      "url": "#"
+    },
+    {
+      "titulo": "Flyers WOM",
+      "descripcion": "Piezas gráficas para WhatsApp y atención en terreno.",
+      "url": "#"
+    }
+  ],
+  "links": [
+    {
+      "nombre": "Geovictoria",
+      "categoria": "Asistencia",
+      "url": "#"
+    },
+    {
+      "nombre": "Correo WOM",
+      "categoria": "Herramienta corporativa",
+      "url": "#"
+    },
+    {
+      "nombre": "Looker Studio Ventas",
+      "categoria": "Gestión comercial",
+      "url": "#"
+    },
+    {
+      "nombre": "Drive Equipo",
+      "categoria": "Documentos",
+      "url": "#"
+    }
+  ],
+  "rutas": [
+    {
+      "dia": "Lunes",
+      "sector": "Castro centro y alrededores",
+      "responsable": "Equipo WOM Street Chiloé"
+    },
+    {
+      "dia": "Martes",
+      "sector": "Sector alto flujo comercial",
+      "responsable": "Equipo WOM Street Chiloé"
+    },
+    {
+      "dia": "Miércoles",
+      "sector": "Puntos estratégicos definidos por líder",
+      "responsable": "Equipo WOM Street Chiloé"
+    }
+  ],
+  "reembolsos": [
+    {
+      "ejecutivo": "Paulina Isabel Pérez Vargas",
+      "monto": "$12.000",
+      "estado": "Pendiente"
+    },
+    {
+      "ejecutivo": "Sebastián Alfonso Chacón Villar",
+      "monto": "$15.000",
+      "estado": "En revisión"
+    }
+  ]
 }
