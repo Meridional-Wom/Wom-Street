@@ -45,11 +45,6 @@
     <p>Seguimiento diario del avance comercial WOM Street Chiloé.</p>
   </div>
 
-  <div class="share-buttons">
-    <button onclick="generarImagenAvanceDia()">📤 Generar Avance</button>
-    <button onclick="generarImagenAvanceMensual()">📤 Generar Avance Mensual</button>
-  </div>
-
   <h3>Gestión diaria</h3>
   <div class="grid" id="kpisDia"></div>
 
@@ -92,6 +87,16 @@
 
   <div id="panelLider" class="private-panel hidden">
     <h2>Panel Líder</h2>
+
+    <div class="card report-panel">
+      <h3>Reportes para WhatsApp</h3>
+      <p class="note">Genera imágenes profesionales para compartir avances del equipo.</p>
+
+      <div class="share-buttons">
+        <button onclick="generarImagenAvanceDia()">📤 Generar Avance</button>
+        <button onclick="generarImagenAvanceMensual()">📈 Generar Avance Mensual</button>
+      </div>
+    </div>
 
     <div class="card">
       <h3>Actualizar indicadores</h3>
