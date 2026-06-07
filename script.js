@@ -34,6 +34,32 @@ async function iniciar(){
   }
 }
 
+async function actualizarDatos(){
+  const boton = document.querySelector(".refresh-btn");
+
+  if(boton){
+    boton.textContent = "Actualizando...";
+    boton.disabled = true;
+  }
+
+  try{
+    const res = await fetch(API_URL + "?t=" + Date.now());
+    const data = await res.json();
+
+    datos = transformarDatos(data);
+    renderTodo();
+
+  }catch(error){
+    console.error("Error al actualizar datos:", error);
+    alert("No se pudieron actualizar los datos.");
+  }finally{
+    if(boton){
+      boton.textContent = "🔄 Actualizar";
+      boton.disabled = false;
+    }
+  }
+}
+
 function transformarDatos(data){
   const dashboard = data.dashboard || {};
 
