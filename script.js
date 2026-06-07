@@ -1,0 +1,1 @@
+console.log("WOM Street iniciado");
