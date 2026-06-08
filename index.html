@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WOM Street Chiloé</title>
-  <link rel="stylesheet" href="styles.css?v=1">
+  <link rel="stylesheet" href="styles.css?v=40">
 </head>
 <body>
 
@@ -41,8 +41,23 @@
 
 <section id="inicio" class="section active">
   <div class="hero">
-    <h2>¡Vamos por más!</h2>
-    <p>Seguimiento diario del avance comercial WOM Street Chiloé.</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div>
+        <h2>¡Vamos por más!</h2>
+        <p>Seguimiento diario del avance comercial WOM Street Chiloé.</p>
+      </div>
+
+      <button onclick="generarImagenReporte()" style="
+        background:#ffffff;
+        color:#35108f;
+        border:1px solid #ded0fa;
+        box-shadow:0 4px 12px rgba(53,16,143,.08);
+        padding:10px 14px;
+        border-radius:999px;
+        font-size:13px;
+        font-weight:800;
+      ">📤 Compartir reporte</button>
+    </div>
   </div>
 
   <h3>Gestión diaria</h3>
@@ -89,12 +104,11 @@
     <h2>Panel Líder</h2>
 
     <div class="card report-panel">
-      <h3>Reportes para WhatsApp</h3>
-      <p class="note">Genera imágenes con avance grupal e individual.</p>
+      <h3>Reporte para WhatsApp</h3>
+      <p class="note">Genera un único reporte con avance diario, avance mensual y equipo.</p>
 
       <div class="share-buttons">
-        <button onclick="generarImagenAvanceDia()">📤 Generar Avance del Día</button>
-        <button onclick="generarImagenAvanceMensual()">📈 Generar Avance del Mes</button>
+        <button onclick="generarImagenReporte()">📤 Compartir reporte comercial</button>
       </div>
     </div>
 
@@ -114,6 +128,6 @@
 <div id="shareArea"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=1"></script>
+<script src="script.js?v=40"></script>
 </body>
 </html>
