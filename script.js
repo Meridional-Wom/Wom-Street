@@ -161,7 +161,9 @@ function transformarDatos(data){
     publicidad:(data.publicidad || []).map(p => ({
       titulo: obtener(p, ["Título","Titulo","Nombre"]),
       descripcion: obtener(p, ["Descripción","Descripcion"]),
-      url: obtener(p, ["Link","URL"]) || "#"
+      url: obtener(p, ["Link","URL"]) || "#",
+      imagen: obtener(p, ["Imagen","imagen"]) || "",
+      activo: obtener(p, ["Activo","activo"]) || "Sí"
     })).filter(p => p.titulo || p.descripcion),
 
     links:(data.links || []).map(l => ({
@@ -353,13 +355,46 @@ function renderPublicidad(){
   const contenedor = document.getElementById("publicidadLista");
   if(!contenedor) return;
 
-  contenedor.innerHTML = datos.publicidad.map(p => `
-    <div class="card">
-      <h3>${p.titulo}</h3>
-      <p>${p.descripcion}</p>
-      <a href="${p.url}" target="_blank">Ver material</a>
-    </div>
-  `).join("");
+  const campañas = datos.publicidad.filter(p => normalizar(p.activo) !== "no");
+
+  contenedor.innerHTML = campañas.map(p => {
+    const textoWhatsApp = `${p.titulo}\n${p.descripcion}\n${p.url}`;
+
+    return `
+      <div class="campania-card">
+
+        ${p.imagen ? `
+          <img
+            src="${p.imagen}"
+            alt="${p.titulo}"
+            class="campania-img"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+          >
+        ` : ""}
+
+        <div class="campania-body">
+          <h3>${p.titulo}</h3>
+          <p>${p.descripcion}</p>
+
+          <div class="campania-actions">
+            <a href="${p.url}" target="_blank" class="btn-campania">
+              Ver material
+            </a>
+
+            <a
+              href="https://wa.me/?text=${encodeURIComponent(textoWhatsApp)}"
+              target="_blank"
+              class="btn-whatsapp"
+            >
+              Compartir WhatsApp
+            </a>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }).join("");
 }
 
 function renderLinks(){
