@@ -312,7 +312,7 @@ function generarHTMLAvanceDia(){
         </div>
 
         <div class="wom-main-box">
-          <div class="wom-icon">🛍️</div>
+          <div class="wom-icon">📱</div>
 
           <div>
             <div class="wom-metric-label">Ventas día</div>
