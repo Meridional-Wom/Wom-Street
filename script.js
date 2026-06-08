@@ -3,49 +3,20 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxP2L869vhRVma1iNcwDEY8
 
 let datos = {};
 
-function numero(valor){
-  const n = Number(valor);
-  return isNaN(n) ? 0 : n;
-}
-
-function porcentaje(valor){
-  const n = numero(valor);
-  return n <= 2 ? n * 100 : n;
-}
-
-function formatoNumero(valor){
-  return Math.round(numero(valor));
-}
-
-function formatoPorcentaje(valor){
-  return porcentaje(valor).toFixed(2).replace(".", ",") + "%";
-}
-
-function color(p){
-  p = porcentaje(p);
-  if(p >= 120) return "purple";
-  if(p >= 100) return "green";
-  if(p >= 80) return "yellow";
-  return "red";
-}
-
-function estadoTexto(p){
-  p = porcentaje(p);
-  if(p >= 120) return "Excelente";
-  if(p >= 100) return "Sobre meta";
-  if(p >= 80) return "En riesgo";
-  return "Bajo meta";
-}
-
 function ocultarLoader(){
   const loader = document.getElementById("loader");
+
   if(loader){
     loader.style.opacity = "0";
-    setTimeout(() => loader.remove(), 500);
+    setTimeout(() => {
+      loader.remove();
+    }, 500);
   }
 }
 
-setTimeout(() => ocultarLoader(), 8000);
+setTimeout(() => {
+  ocultarLoader();
+}, 8000);
 
 async function iniciar(){
   try{
@@ -79,7 +50,7 @@ async function actualizarDatos(){
     renderTodo();
 
   }catch(error){
-    console.error(error);
+    console.error("Error al actualizar datos:", error);
     alert("No se pudieron actualizar los datos.");
   }finally{
     if(boton){
@@ -89,213 +60,122 @@ async function actualizarDatos(){
   }
 }
 
+function numero(valor){
+  const n = Number(valor);
+  return isNaN(n) ? 0 : n;
+}
+
 function transformarDatos(data){
-  const resumen = data.resumen_control || {};
-
-  const resumenFinal = {
-    total_pp: numero(resumen["Total PP"]),
-    meta_mensual: numero(resumen["Meta mensual"]),
-    deberian_llevar: numero(resumen["Deberían llevar"]),
-    gap: numero(resumen["GAP"]),
-    proyeccion_equipo: porcentaje(resumen["Proyección lineal equipo"]),
-    fcst: numero(resumen["FCST"]),
-    fcst_vs_meta: porcentaje(resumen["FCST vs Meta"]),
-    total_prospectos: numero(resumen["Total prospectos"]),
-    estado_equipo: resumen["Estado equipo"] || estadoTexto(resumen["Proyección lineal equipo"]),
-    estado_fcst: resumen["Estado FCST"] || estadoTexto(resumen["FCST vs Meta"])
-  };
-
-  const filasResumen = [
-    "Total PP",
-    "Meta mensual",
-    "Deberían llevar",
-    "GAP",
-    "Proyección lineal equipo",
-    "FCST",
-    "FCST vs Meta",
-    "Total prospectos",
-    "Estado equipo",
-    "Estado FCST"
-  ];
-
-  const equipo = (data.control_diario || [])
-    .filter(e => {
-      const nombre = String(e["Ejecutivo"] || "").trim();
-      return nombre && !filasResumen.includes(nombre);
-    })
-    .map(e => ({
-      ejecutivo: String(e["Ejecutivo"] || "").trim(),
-      pp: numero(e["PP"]),
-      proyeccion: porcentaje(e["Proyección Lineal"] || e["Proyeccion Lineal"]),
-      prospectos: numero(e["Prospectos Ingresados"] || e["Prospectos"]),
-      estado: e["Estado"] || estadoTexto(e["Proyección Lineal"] || e["Proyeccion Lineal"])
-    }))
-    .filter(e => e.ejecutivo);
-
-  equipo.sort((a,b) => b.proyeccion - a.proyeccion);
+  const dashboard = data.dashboard || {};
 
   return {
-    resumen: resumenFinal,
-    equipo,
-    avisos: data.avisos || [],
-    biblioteca: data.biblioteca || [],
-    publicidad: data.publicidad || [],
-    links: data.links || [],
-    rutas: data.rutas || [],
-    reembolsos: data.reembolsos || [],
-    historial: data.historial || []
+    ultima_actualizacion:
+      dashboard["Última actualización"] ||
+      dashboard["Ultima actualización"] ||
+      dashboard["Actualización"] ||
+      "",
+
+    dashboard:{
+      ventas_dia: numero(
+        dashboard["Ventas día"] ||
+        dashboard["Ventas Día"] ||
+        dashboard["Ventas dia"] ||
+        dashboard["Ventas Dia"]
+      ),
+
+      meta_dia: numero(
+        dashboard["Meta día"] ||
+        dashboard["Meta Día"] ||
+        dashboard["Meta dia"] ||
+        dashboard["Meta Dia"]
+      ),
+
+      ventas_mtd: numero(
+        dashboard["Ventas MTD"] ||
+        dashboard["MTD"]
+      ),
+
+      meta_mes: numero(
+        dashboard["Meta mes"] ||
+        dashboard["Meta Mes"] ||
+        dashboard["Meta mensual"]
+      ),
+
+      fcst: numero(
+        dashboard["FCST"] ||
+        dashboard["FCST manual"] ||
+        dashboard["FCST Manual"] ||
+        dashboard["Forecast"]
+      )
+    },
+
+    equipo:(data.equipo || []).map(e => ({
+      nombre: e["Ejecutivo"] || "",
+      ventas_dia: numero(
+        e["Ventas Día"] ||
+        e["Ventas Dia"] ||
+        e["Ventas día"] ||
+        e["Hoy"]
+      ),
+      mtd: numero(
+        e["Ventas MTD"] ||
+        e["MTD"]
+      ),
+      meta: numero(
+        e["Meta Mes"] ||
+        e["Meta mes"] ||
+        e["Meta"]
+      ),
+      observacion:
+        e["Observación"] ||
+        e["Observacion"] ||
+        ""
+    })).filter(e => e.nombre),
+
+    avisos:(data.avisos || []).map(a => ({
+      titulo: a["Título"] || a["Titulo"] || "",
+      descripcion: a["Descripción"] || a["Descripcion"] || ""
+    })),
+
+    biblioteca:(data.biblioteca || []).map(b => ({
+      titulo: b["Título"] || b["Titulo"] || "",
+      descripcion: b["Descripción"] || b["Descripcion"] || "",
+      url: b["Link"] || b["URL"] || "#"
+    })),
+
+    publicidad:(data.publicidad || []).map(p => ({
+      titulo: p["Título"] || p["Titulo"] || "",
+      descripcion: p["Descripción"] || p["Descripcion"] || "",
+      url: p["Link"] || p["URL"] || "#"
+    })),
+
+    links:(data.links || []).map(l => ({
+      nombre: l["Nombre"] || "",
+      categoria: l["Categoría"] || l["Categoria"] || "",
+      url: l["URL"] || l["Link"] || "#"
+    })),
+
+    rutas:(data.rutas || []).map(r => ({
+      dia: r["Día"] || r["Dia"] || r["Fecha"] || "",
+      sector: r["Sector"] || "",
+      responsable: r["Responsable"] || ""
+    })),
+
+    reembolsos:(data.reembolsos || []).map(r => ({
+      ejecutivo: r["Ejecutivo"] || "",
+      monto: r["Monto"] || "",
+      estado: r["Estado"] || ""
+    }))
   };
-}
-
-function renderTodo(){
-  renderHeader();
-  renderResumen();
-  renderRanking();
-  renderOperacion();
-  renderLider();
-}
-
-function renderHeader(){
-  const el = document.getElementById("ultimaActualizacion");
-  if(el){
-    el.textContent = "Actualizado: " + fechaCorta();
-  }
-}
-
-function renderResumen(){
-  const r = datos.resumen;
-
-  setText("totalPP", formatoNumero(r.total_pp));
-  setText("metaMensual", formatoNumero(r.meta_mensual));
-  setText("deberianLlevar", formatoNumero(r.deberian_llevar));
-  setText("gapEquipo", r.gap);
-  setText("proyeccionEquipo", formatoPorcentaje(r.proyeccion_equipo));
-  setText("fcst", formatoNumero(r.fcst));
-  setText("fcstVsMeta", formatoPorcentaje(r.fcst_vs_meta));
-  setText("totalProspectos", formatoNumero(r.total_prospectos));
-
-  setWidth("barraPP", porcentaje(r.total_pp / r.meta_mensual));
-  setWidth("barraProyeccion", r.proyeccion_equipo);
-
-  const estadoEquipo = document.getElementById("estadoEquipo");
-  if(estadoEquipo){
-    estadoEquipo.textContent = r.estado_equipo;
-    estadoEquipo.className = "badge " + color(r.proyeccion_equipo);
-  }
-
-  const estadoFcst = document.getElementById("estadoFcst");
-  if(estadoFcst){
-    estadoFcst.textContent = r.estado_fcst;
-    estadoFcst.className = "badge " + color(r.fcst_vs_meta);
-  }
-}
-
-function renderRanking(){
-  const contenedor = document.getElementById("rankingEquipo");
-  if(!contenedor) return;
-
-  contenedor.innerHTML = datos.equipo.map((e, index) => `
-    <div class="ranking-card">
-      <div class="ranking-position">${medalla(index)}</div>
-
-      <div class="ranking-info">
-        <strong>${e.ejecutivo}</strong>
-        <span>PP ${e.pp} · Prospectos ${e.prospectos}</span>
-        <div class="progress">
-          <span style="width:${Math.min(e.proyeccion,100)}%"></span>
-        </div>
-      </div>
-
-      <div class="ranking-result">
-        <strong>${formatoPorcentaje(e.proyeccion)}</strong>
-        <span class="badge ${color(e.proyeccion)}">${e.estado}</span>
-      </div>
-    </div>
-  `).join("");
-}
-
-function renderOperacion(){
-  renderCards("avisosLista", datos.avisos, "aviso");
-  renderCards("bibliotecaLista", datos.biblioteca, "biblioteca");
-  renderCards("publicidadLista", datos.publicidad, "publicidad");
-  renderCards("linksLista", datos.links, "links");
-}
-
-function renderCards(id, lista, tipo){
-  const contenedor = document.getElementById(id);
-  if(!contenedor) return;
-
-  contenedor.innerHTML = (lista || []).map(item => {
-    const titulo = item["Título"] || item["Titulo"] || item["Nombre"] || item["Día"] || item["Dia"] || item["Fecha"] || "Sin título";
-    const descripcion = item["Descripción"] || item["Descripcion"] || item["Categoría"] || item["Categoria"] || item["Sector"] || "";
-    const url = item["Link"] || item["URL"] || "";
-
-    return `
-      <div class="card">
-        <h3>${icono(tipo)} ${titulo}</h3>
-        <p>${descripcion}</p>
-        ${url ? `<a href="${url}" target="_blank">Abrir</a>` : ""}
-      </div>
-    `;
-  }).join("");
-}
-
-function renderLider(){
-  const r = datos.resumen;
-
-  const liderResumen = document.getElementById("liderResumen");
-  if(liderResumen){
-    liderResumen.innerHTML = `
-      ${miniKpi("Total PP", formatoNumero(r.total_pp), "Meta " + formatoNumero(r.meta_mensual))}
-      ${miniKpi("GAP", r.gap, "Contra deberían llevar")}
-      ${miniKpi("Proyección", formatoPorcentaje(r.proyeccion_equipo), r.estado_equipo)}
-      ${miniKpi("FCST", formatoNumero(r.fcst), formatoPorcentaje(r.fcst_vs_meta))}
-      ${miniKpi("Prospectos", formatoNumero(r.total_prospectos), "Total equipo")}
-    `;
-  }
-
-  const liderEquipo = document.getElementById("liderEquipo");
-  if(liderEquipo){
-    liderEquipo.innerHTML = document.getElementById("rankingEquipo")?.innerHTML || "";
-  }
-
-  const rutasLista = document.getElementById("rutasLista");
-  if(rutasLista){
-    rutasLista.innerHTML = (datos.rutas || []).map(r => `
-      <div class="card">
-        <h3>📍 ${r["Día"] || r["Dia"] || r["Fecha"] || "Ruta"}</h3>
-        <p>${r["Sector"] || ""}</p>
-        <small>${r["Responsable"] || ""}</small>
-      </div>
-    `).join("");
-  }
-
-  const reembolsosLista = document.getElementById("reembolsosLista");
-  if(reembolsosLista){
-    reembolsosLista.innerHTML = (datos.reembolsos || []).map(r => `
-      <div class="card">
-        <h3>💳 ${r["Ejecutivo"] || "Reembolso"}</h3>
-        <p>Monto: ${r["Monto"] || ""}</p>
-        <span class="badge yellow">${r["Estado"] || ""}</span>
-      </div>
-    `).join("");
-  }
-}
-
-function miniKpi(titulo, valor, subtitulo){
-  return `
-    <div class="card">
-      <div class="kpi-title">${titulo}</div>
-      <div class="kpi-value">${valor}</div>
-      <p class="kpi-sub">${subtitulo || ""}</p>
-    </div>
-  `;
 }
 
 function mostrar(id){
-  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".section").forEach(s => {
+    s.classList.remove("active");
+  });
 
   const seccion = document.getElementById(id);
+
   if(seccion){
     seccion.classList.add("active");
     window.scrollTo({top:0,behavior:"smooth"});
@@ -315,34 +195,224 @@ function validarCodigo(){
   }
 }
 
-function setText(id, value){
-  const el = document.getElementById(id);
-  if(el) el.textContent = value;
+function porcentaje(valor, meta){
+  if(!meta || meta === 0) return 0;
+  return Math.round((valor / meta) * 100);
 }
 
-function setWidth(id, value){
-  const el = document.getElementById(id);
-  if(el) el.style.width = Math.min(Math.max(porcentaje(value),0),100) + "%";
+function color(p){
+  if(p >= 90) return "green";
+  if(p >= 60) return "yellow";
+  return "red";
 }
 
-function medalla(index){
-  if(index === 0) return "🥇";
-  if(index === 1) return "🥈";
-  if(index === 2) return "🥉";
-  return index + 1;
+function estado(p){
+  if(p >= 90) return "Sobre meta";
+  if(p >= 60) return "En riesgo";
+  return "Bajo meta";
 }
 
-function icono(tipo){
-  if(tipo === "biblioteca") return "📚";
-  if(tipo === "publicidad") return "📢";
-  if(tipo === "links") return "🔗";
-  return "📌";
+function calcular(){
+  const d = datos.dashboard;
+
+  d.cumplimiento_dia = porcentaje(d.ventas_dia, d.meta_dia);
+  d.cumplimiento_mes = porcentaje(d.ventas_mtd, d.meta_mes);
+  d.gap = d.ventas_mtd - d.meta_mes;
+  d.diferencia_fcst = d.fcst - d.meta_mes;
+  d.estado_fcst = porcentaje(d.fcst, d.meta_mes);
+
+  datos.equipo.forEach(e => {
+    e.cumplimiento = porcentaje(e.mtd, e.meta);
+    e.gap = e.mtd - e.meta;
+  });
+}
+
+function renderTodo(){
+  calcular();
+  renderHeader();
+  renderKpis();
+  renderEquipo();
+  renderAvisos();
+  renderBiblioteca();
+  renderPublicidad();
+  renderLinks();
+  renderPrivado();
+}
+
+function renderHeader(){
+  const el = document.getElementById("ultimaActualizacion");
+  if(el){
+    el.textContent =
+      "Actualizado: " + (datos.ultima_actualizacion || fechaCorta());
+  }
+}
+
+function kpi(titulo, valor, subtitulo, progreso){
+  const barra = progreso !== undefined
+    ? `<div class="progress"><span style="width:${Math.min(Math.max(progreso,0),100)}%"></span></div>`
+    : "";
+
+  return `
+    <div class="card">
+      <div class="kpi-title">${titulo}</div>
+      <div class="kpi-value">${valor}</div>
+      <p class="kpi-sub">${subtitulo || ""}</p>
+      ${barra}
+    </div>
+  `;
+}
+
+function renderKpis(){
+  const d = datos.dashboard;
+
+  document.getElementById("kpisDia").innerHTML = `
+    ${kpi("Ventas del día", d.ventas_dia, "Gestión diaria")}
+    ${kpi("Meta diaria", d.meta_dia, "Objetivo del día")}
+    ${kpi("Cumplimiento diario", d.cumplimiento_dia + "%", estado(d.cumplimiento_dia), d.cumplimiento_dia)}
+  `;
+
+  document.getElementById("kpisMes").innerHTML = `
+    ${kpi("Ventas MTD", d.ventas_mtd, "Acumulado del mes")}
+    ${kpi("Meta mensual", d.meta_mes, "Objetivo mensual")}
+    ${kpi("Cumplimiento mes", d.cumplimiento_mes + "%", estado(d.cumplimiento_mes), d.cumplimiento_mes)}
+    ${kpi("GAP", d.gap, "Diferencia contra meta")}
+  `;
+
+  document.getElementById("kpisForecast").innerHTML = `
+    ${kpi("FCST", d.fcst, "Proyección de cierre")}
+    ${kpi("Diferencia FCST", d.diferencia_fcst, "Forecast vs meta")}
+    <div class="card">
+      <div class="kpi-title">Estado de cierre</div>
+      <div class="kpi-value">
+        <span class="badge ${color(d.estado_fcst)}">${estado(d.estado_fcst)}</span>
+      </div>
+      <p class="kpi-sub">Según la proyección actual</p>
+    </div>
+  `;
+}
+
+function renderEquipo(){
+  const contenedor = document.getElementById("equipoCards");
+  if(!contenedor) return;
+
+  contenedor.innerHTML = datos.equipo.map(e => `
+    <div class="person">
+      <div class="person-top">
+        <div class="person-name">${e.nombre}</div>
+        <span class="badge ${color(e.cumplimiento)}">${estado(e.cumplimiento)}</span>
+      </div>
+
+      <div class="person-grid">
+        <div class="mini"><span>Hoy</span><strong>${e.ventas_dia}</strong></div>
+        <div class="mini"><span>MTD</span><strong>${e.mtd}</strong></div>
+        <div class="mini"><span>Meta</span><strong>${e.meta}</strong></div>
+        <div class="mini"><span>Cump.</span><strong>${e.cumplimiento}%</strong></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderAvisos(){
+  const contenedor = document.getElementById("avisosLista");
+  if(!contenedor) return;
+
+  contenedor.innerHTML = datos.avisos.map(a => `
+    <div class="card">
+      <h3>${a.titulo}</h3>
+      <p>${a.descripcion}</p>
+    </div>
+  `).join("");
+}
+
+function renderBiblioteca(){
+  const contenedor = document.getElementById("bibliotecaLista");
+  if(!contenedor) return;
+
+  contenedor.innerHTML = datos.biblioteca.map(b => `
+    <div class="card">
+      <h3>${b.titulo}</h3>
+      <p>${b.descripcion}</p>
+      <a href="${b.url}" target="_blank">Abrir</a>
+    </div>
+  `).join("");
+}
+
+function renderPublicidad(){
+  const contenedor = document.getElementById("publicidadLista");
+  if(!contenedor) return;
+
+  contenedor.innerHTML = datos.publicidad.map(p => `
+    <div class="card">
+      <h3>${p.titulo}</h3>
+      <p>${p.descripcion}</p>
+      <a href="${p.url}" target="_blank">Ver material</a>
+    </div>
+  `).join("");
+}
+
+function renderLinks(){
+  const contenedor = document.getElementById("linksLista");
+  if(!contenedor) return;
+
+  contenedor.innerHTML = datos.links.map(l => `
+    <div class="card">
+      <h3>${l.nombre}</h3>
+      <p>${l.categoria}</p>
+      <a href="${l.url}" target="_blank">Abrir enlace</a>
+    </div>
+  `).join("");
+}
+
+function renderPrivado(){
+  const liderEquipo = document.getElementById("liderEquipo");
+  if(liderEquipo){
+    liderEquipo.innerHTML = datos.equipo.map(e => `
+      <div class="person">
+        <div class="person-top">
+          <div class="person-name">${e.nombre}</div>
+          <span class="badge ${color(e.cumplimiento)}">${estado(e.cumplimiento)}</span>
+        </div>
+
+        <div class="person-grid">
+          <div class="mini"><span>Hoy</span><strong>${e.ventas_dia}</strong></div>
+          <div class="mini"><span>MTD</span><strong>${e.mtd}</strong></div>
+          <div class="mini"><span>Meta</span><strong>${e.meta}</strong></div>
+          <div class="mini"><span>GAP</span><strong>${e.gap}</strong></div>
+        </div>
+
+        <p>${e.observacion}</p>
+      </div>
+    `).join("");
+  }
+
+  const rutasLista = document.getElementById("rutasLista");
+  if(rutasLista){
+    rutasLista.innerHTML = datos.rutas.map(r => `
+      <div class="card">
+        <h3>${r.dia}</h3>
+        <p>${r.sector}</p>
+        <small>${r.responsable}</small>
+      </div>
+    `).join("");
+  }
+
+  const reembolsosLista = document.getElementById("reembolsosLista");
+  if(reembolsosLista){
+    reembolsosLista.innerHTML = datos.reembolsos.map(r => `
+      <div class="card">
+        <h3>${r.ejecutivo}</h3>
+        <p>Monto: ${r.monto}</p>
+        <span class="badge yellow">${r.estado}</span>
+      </div>
+    `).join("");
+  }
 }
 
 function fechaReporte(){
   const fecha = new Date();
   const dias = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
   const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
   return `${dias[fecha.getDay()]} ${fecha.getDate()} de ${meses[fecha.getMonth()]} de ${fecha.getFullYear()}`;
 }
 
@@ -358,8 +428,12 @@ function fechaCorta(){
   return `${fechaReporte()} · ${horaReporte()} hrs`;
 }
 
+function primerNombre(nombre){
+  return String(nombre || "").trim().split(" ")[0] || "";
+}
+
 function generarHTMLAvanceDia(){
-  const r = datos.resumen;
+  const d = datos.dashboard;
 
   return `
     <div class="share-card" id="cardDia">
@@ -372,46 +446,45 @@ function generarHTMLAvanceDia(){
           <div class="wom-logo">WOM</div>
         </div>
 
-        <div class="wom-report-title">AVANCE DIARIO</div>
+        <div class="wom-report-title">AVANCE DEL DÍA</div>
 
         <div class="wom-report-date">
           <span>📅 ${fechaReporte()}</span>
           <span>🕘 ${horaReporte()} hrs</span>
         </div>
 
-        <div class="wom-month-summary">
-          <div class="wom-month-cell">
-            <div class="wom-month-label">Total PP</div>
-            <div class="wom-month-number">${formatoNumero(r.total_pp)}</div>
-            <div class="wom-month-sub">Meta ${formatoNumero(r.meta_mensual)}</div>
+        <div class="wom-main-box">
+          <div class="wom-icon">📱</div>
+          <div>
+            <div class="wom-metric-label">Ventas día</div>
+            <div class="wom-metric-number">${d.ventas_dia} / ${d.meta_dia}</div>
           </div>
-
-          <div class="wom-month-cell">
-            <div class="wom-month-label">GAP</div>
-            <div class="wom-month-number">${r.gap}</div>
-            <div class="wom-month-sub">Contra deberían llevar</div>
-          </div>
-
-          <div class="wom-month-cell">
-            <div class="wom-month-label">Proyección</div>
-            <div class="wom-month-number">${formatoPorcentaje(r.proyeccion_equipo)}</div>
-            <div class="wom-month-sub">${r.estado_equipo}</div>
+          <div>
+            <div class="wom-metric-label">Meta diaria</div>
+            <div class="wom-small-number">${d.meta_dia}</div>
           </div>
         </div>
 
-        <div class="wom-section-title">Ranking equipo</div>
+        <div class="wom-total-bar">
+          <span>👥 Total equipo</span>
+          <strong>${d.ventas_dia}</strong>
+        </div>
 
-        ${datos.equipo.map((e,index) => `
-          <div class="wom-team-row">
-            <span>${medalla(index)} ${e.ejecutivo}</span>
-            <strong>${formatoPorcentaje(e.proyeccion)}</strong>
-          </div>
-        `).join("")}
+        <div class="wom-section-title">👥 EQUIPO</div>
+
+        <div class="wom-team-table">
+          ${datos.equipo.map(e => `
+            <div class="wom-team-row">
+              <span>${primerNombre(e.nombre)}</span>
+              <strong>${e.ventas_dia}</strong>
+            </div>
+          `).join("")}
+        </div>
 
         <div class="wom-footer">
           <div class="wom-footer-star">★</div>
           <div class="wom-footer-title">WOM STREET CHILOÉ</div>
-          <div class="wom-footer-sub">CONTROL COMERCIAL DIARIO</div>
+          <div class="wom-footer-sub">REPORTE COMERCIAL</div>
         </div>
       </div>
     </div>
@@ -419,7 +492,7 @@ function generarHTMLAvanceDia(){
 }
 
 function generarHTMLAvanceMensual(){
-  const r = datos.resumen;
+  const d = datos.dashboard;
 
   return `
     <div class="share-card" id="cardMes">
@@ -432,7 +505,7 @@ function generarHTMLAvanceMensual(){
           <div class="wom-logo">WOM</div>
         </div>
 
-        <div class="wom-report-title">PROYECCIÓN MENSUAL</div>
+        <div class="wom-report-title">AVANCE DEL MES</div>
 
         <div class="wom-report-date">
           <span>📅 ${fechaReporte()}</span>
@@ -441,39 +514,51 @@ function generarHTMLAvanceMensual(){
 
         <div class="wom-month-summary">
           <div class="wom-month-cell">
+            <div class="wom-month-label">Ventas MTD</div>
+            <div class="wom-month-number">${d.ventas_mtd} / ${d.meta_mes}</div>
+            <div class="wom-month-sub">Meta mensual: ${d.meta_mes}</div>
+          </div>
+
+          <div class="wom-month-cell">
+            <div class="wom-month-label">Cumplimiento</div>
+            <div class="wom-month-percent">${d.cumplimiento_mes}%</div>
+          </div>
+
+          <div class="wom-month-cell">
             <div class="wom-month-label">FCST</div>
-            <div class="wom-month-number">${formatoNumero(r.fcst)}</div>
-            <div class="wom-month-sub">${formatoPorcentaje(r.fcst_vs_meta)} vs meta</div>
-          </div>
-
-          <div class="wom-month-cell">
-            <div class="wom-month-label">Meta</div>
-            <div class="wom-month-number">${formatoNumero(r.meta_mensual)}</div>
-            <div class="wom-month-sub">Mensual</div>
-          </div>
-
-          <div class="wom-month-cell">
-            <div class="wom-month-label">Prospectos</div>
-            <div class="wom-month-number">${formatoNumero(r.total_prospectos)}</div>
-            <div class="wom-month-sub">Ingresados</div>
+            <div class="wom-month-number">${d.fcst}</div>
+            <div class="wom-month-sub">Proyección de cierre</div>
           </div>
         </div>
 
-        <div class="wom-section-title">Equipo</div>
+        <div class="wom-section-title">👥 EQUIPO</div>
+
+        <div class="wom-table-head">
+          <span>Ejecutivo</span>
+          <span>Ventas MTD</span>
+          <span>Meta Individual</span>
+          <span>Cumplimiento</span>
+        </div>
 
         ${datos.equipo.map(e => `
           <div class="wom-table-row">
-            <span>${e.ejecutivo}</span>
-            <strong>${e.pp} PP</strong>
-            <strong>${e.prospectos} Prospectos</strong>
-            <div class="wom-pill">${formatoPorcentaje(e.proyeccion)}</div>
+            <span>${primerNombre(e.nombre)}</span>
+            <strong>${e.mtd}</strong>
+            <strong>${e.meta}</strong>
+            <div class="wom-pill">${e.cumplimiento}%</div>
           </div>
         `).join("")}
+
+        <div class="wom-month-total">
+          <span>👥 TOTAL EQUIPO</span>
+          <strong>${d.ventas_mtd} / ${d.meta_mes}</strong>
+          <div class="wom-pill">${d.cumplimiento_mes}%</div>
+        </div>
 
         <div class="wom-footer">
           <div class="wom-footer-star">★</div>
           <div class="wom-footer-title">WOM STREET CHILOÉ</div>
-          <div class="wom-footer-sub">CONTROL COMERCIAL MENSUAL</div>
+          <div class="wom-footer-sub">REPORTE COMERCIAL</div>
         </div>
       </div>
     </div>
@@ -509,14 +594,14 @@ async function descargarImagen(id, nombreArchivo){
 async function generarImagenAvanceDia(){
   const area = document.getElementById("shareArea");
   area.innerHTML = generarHTMLAvanceDia();
-  await descargarImagen("cardDia","avance-diario-wom-street.png");
+  await descargarImagen("cardDia","avance-dia-wom-street.png");
   area.innerHTML = "";
 }
 
 async function generarImagenAvanceMensual(){
   const area = document.getElementById("shareArea");
   area.innerHTML = generarHTMLAvanceMensual();
-  await descargarImagen("cardMes","avance-mensual-wom-street.png");
+  await descargarImagen("cardMes","avance-mes-wom-street.png");
   area.innerHTML = "";
 }
 
