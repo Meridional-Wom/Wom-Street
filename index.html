@@ -90,36 +90,12 @@
 
     <div class="card report-panel">
       <h3>Reportes para WhatsApp</h3>
-      <p class="note">Genera imágenes profesionales para compartir avances del equipo.</p>
+      <p class="note">Genera imágenes con avance grupal e individual.</p>
 
       <div class="share-buttons">
-        <button onclick="generarImagenAvanceDia()">📤 Generar Avance</button>
-        <button onclick="generarImagenAvanceMensual()">📈 Generar Avance Mensual</button>
+        <button onclick="generarImagenAvanceDia()">📤 Generar Avance del Día</button>
+        <button onclick="generarImagenAvanceMensual()">📈 Generar Avance del Mes</button>
       </div>
-    </div>
-
-    <div class="card">
-      <h3>Actualizar indicadores</h3>
-
-      <label>Ventas del día</label>
-      <input id="formVentasDia" type="number">
-
-      <label>Meta diaria</label>
-      <input id="formMetaDia" type="number">
-
-      <label>Ventas MTD</label>
-      <input id="formVentasMTD" type="number">
-
-      <label>Meta mensual</label>
-      <input id="formMetaMes" type="number">
-
-      <label>FCST</label>
-      <input id="formFcst" type="number">
-
-      <button onclick="guardarIndicadores()">Guardar cambios</button>
-      <button class="secondary" onclick="resetearDatos()">Restablecer datos</button>
-
-      <p class="note">Por ahora los datos se actualizan desde Google Sheets.</p>
     </div>
 
     <h3>Ventas individuales</h3>
