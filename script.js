@@ -62,7 +62,6 @@ function normalizar(texto){
 
 function obtener(obj, nombres){
   if(!obj) return "";
-
   const claves = Object.keys(obj);
 
   for(const nombre of nombres){
@@ -446,59 +445,146 @@ function primerNombre(nombre){
   return String(nombre || "").trim().split(" ")[0] || "";
 }
 
+function estilosReporte(){
+  return `
+    font-family: Arial, Helvetica, sans-serif;
+    box-sizing: border-box;
+  `;
+}
+
+function filaReporte(nombre, valor){
+  return `
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-bottom:2px solid #eeeaf5;
+      padding:18px 0;
+      font-size:32px;
+      color:#161226;
+    ">
+      <span>${nombre}</span>
+      <strong style="color:#35108f;">${valor}</strong>
+    </div>
+  `;
+}
+
 function generarHTMLAvanceDia(){
   const d = datos.dashboard;
 
   return `
-    <div class="share-card" id="cardDia">
-      <div class="wom-report-card">
-        <div class="wom-report-header">
+    <div id="cardDia" style="
+      ${estilosReporte()}
+      width:1080px;
+      height:1080px;
+      background:linear-gradient(135deg,#25006d 0%,#35108f 45%,#681df2 78%,#ff2f93 100%);
+      padding:64px;
+      position:fixed;
+      left:-9999px;
+      top:0;
+    ">
+      <div style="
+        width:100%;
+        height:100%;
+        background:#ffffff;
+        border-radius:48px;
+        padding:58px;
+        display:flex;
+        flex-direction:column;
+      ">
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          border-bottom:2px solid #eeeaf5;
+          padding-bottom:28px;
+        ">
           <div>
-            <div class="wom-report-label">REPORTE COMERCIAL</div>
-            <div class="wom-report-brand">WOM STREET CHILOÉ</div>
+            <div style="
+              color:#ff2f93;
+              font-size:22px;
+              font-weight:900;
+              letter-spacing:3px;
+            ">REPORTE COMERCIAL</div>
+
+            <div style="
+              color:#35108f;
+              font-size:36px;
+              font-weight:900;
+              margin-top:8px;
+            ">WOM STREET CHILOÉ</div>
           </div>
-          <div class="wom-logo">WOM</div>
+
+          <div style="
+            color:#706989;
+            font-size:26px;
+            font-weight:900;
+          ">${horaReporte()} hrs</div>
         </div>
 
-        <div class="wom-report-title">AVANCE DEL DÍA</div>
+        <div style="
+          color:#35108f;
+          font-size:76px;
+          font-weight:900;
+          margin:42px 0 28px;
+          line-height:1;
+        ">AVANCE</div>
 
-        <div class="wom-report-date">
-          <span>📅 ${fechaReporte()}</span>
-          <span>🕘 ${horaReporte()} hrs</span>
-        </div>
-
-        <div class="wom-main-box">
-          <div class="wom-icon">📱</div>
+        <div style="
+          background:#f4f0fb;
+          border-radius:30px;
+          padding:34px 40px;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          margin-bottom:44px;
+        ">
           <div>
-            <div class="wom-metric-label">Ventas día</div>
-            <div class="wom-metric-number">${d.ventas_dia} / ${d.meta_dia}</div>
+            <div style="
+              color:#706989;
+              font-size:28px;
+              font-weight:900;
+              margin-bottom:8px;
+            ">Ventas día / Meta día</div>
+
+            <div style="
+              color:#35108f;
+              font-size:82px;
+              font-weight:900;
+              line-height:1;
+            ">${d.ventas_dia} / ${d.meta_dia}</div>
           </div>
-          <div>
-            <div class="wom-metric-label">Meta diaria</div>
-            <div class="wom-small-number">${d.meta_dia}</div>
-          </div>
+
+          <div style="
+            color:#161226;
+            font-size:30px;
+            font-weight:900;
+          ">Gestión diaria</div>
         </div>
 
-        <div class="wom-total-bar">
-          <span>👥 Total equipo</span>
-          <strong>${d.ventas_dia}</strong>
+        <div style="
+          color:#35108f;
+          font-size:30px;
+          font-weight:900;
+          margin-bottom:14px;
+        ">Equipo</div>
+
+        <div>
+          ${datos.equipo.map(e => filaReporte(primerNombre(e.nombre), e.ventas_dia)).join("")}
         </div>
 
-        <div class="wom-section-title">👥 EQUIPO</div>
-
-        <div class="wom-team-table">
-          ${datos.equipo.map(e => `
-            <div class="wom-team-row">
-              <span>${primerNombre(e.nombre)}</span>
-              <strong>${e.ventas_dia}</strong>
-            </div>
-          `).join("")}
-        </div>
-
-        <div class="wom-footer">
-          <div class="wom-footer-star">★</div>
-          <div class="wom-footer-title">WOM STREET CHILOÉ</div>
-          <div class="wom-footer-sub">REPORTE COMERCIAL</div>
+        <div style="
+          margin-top:auto;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          color:#706989;
+          font-size:28px;
+          font-weight:900;
+          padding-top:26px;
+        ">
+          <span>Total equipo: ${d.ventas_dia}</span>
+          <span>Actualizado ${horaReporte()} hrs</span>
         </div>
       </div>
     </div>
@@ -509,70 +595,137 @@ function generarHTMLAvanceMensual(){
   const d = datos.dashboard;
 
   return `
-    <div class="share-card" id="cardMes">
-      <div class="wom-report-card">
-        <div class="wom-report-header">
+    <div id="cardMes" style="
+      ${estilosReporte()}
+      width:1080px;
+      height:1080px;
+      background:linear-gradient(135deg,#25006d 0%,#35108f 45%,#681df2 78%,#ff2f93 100%);
+      padding:64px;
+      position:fixed;
+      left:-9999px;
+      top:0;
+    ">
+      <div style="
+        width:100%;
+        height:100%;
+        background:#ffffff;
+        border-radius:48px;
+        padding:58px;
+        display:flex;
+        flex-direction:column;
+      ">
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          border-bottom:2px solid #eeeaf5;
+          padding-bottom:28px;
+        ">
           <div>
-            <div class="wom-report-label">REPORTE COMERCIAL</div>
-            <div class="wom-report-brand">WOM STREET CHILOÉ</div>
-          </div>
-          <div class="wom-logo">WOM</div>
-        </div>
+            <div style="
+              color:#ff2f93;
+              font-size:22px;
+              font-weight:900;
+              letter-spacing:3px;
+            ">REPORTE COMERCIAL</div>
 
-        <div class="wom-report-title">AVANCE DEL MES</div>
-
-        <div class="wom-report-date">
-          <span>📅 ${fechaReporte()}</span>
-          <span>🕘 ${horaReporte()} hrs</span>
-        </div>
-
-        <div class="wom-month-summary">
-          <div class="wom-month-cell">
-            <div class="wom-month-label">Ventas MTD</div>
-            <div class="wom-month-number">${d.ventas_mtd} / ${d.meta_mes}</div>
-            <div class="wom-month-sub">Meta mensual: ${d.meta_mes}</div>
+            <div style="
+              color:#35108f;
+              font-size:36px;
+              font-weight:900;
+              margin-top:8px;
+            ">WOM STREET CHILOÉ</div>
           </div>
 
-          <div class="wom-month-cell">
-            <div class="wom-month-label">Cumplimiento</div>
-            <div class="wom-month-percent">${d.cumplimiento_mes}%</div>
+          <div style="
+            color:#706989;
+            font-size:26px;
+            font-weight:900;
+          ">${horaReporte()} hrs</div>
+        </div>
+
+        <div style="
+          color:#35108f;
+          font-size:70px;
+          font-weight:900;
+          margin:42px 0 28px;
+          line-height:1;
+        ">AVANCE MENSUAL</div>
+
+        <div style="
+          background:#f4f0fb;
+          border-radius:30px;
+          padding:34px 40px;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          margin-bottom:44px;
+        ">
+          <div>
+            <div style="
+              color:#706989;
+              font-size:28px;
+              font-weight:900;
+              margin-bottom:8px;
+            ">Ventas MTD / Meta mensual</div>
+
+            <div style="
+              color:#35108f;
+              font-size:82px;
+              font-weight:900;
+              line-height:1;
+            ">${d.ventas_mtd} / ${d.meta_mes}</div>
           </div>
 
-          <div class="wom-month-cell">
-            <div class="wom-month-label">FCST</div>
-            <div class="wom-month-number">${d.fcst}</div>
-            <div class="wom-month-sub">Proyección de cierre</div>
+          <div style="text-align:right;">
+            <div style="
+              color:#ff2f93;
+              font-size:64px;
+              font-weight:900;
+              line-height:1;
+            ">${d.cumplimiento_mes}%</div>
+
+            <div style="
+              color:#706989;
+              font-size:24px;
+              font-weight:900;
+              margin-top:8px;
+            ">Cumplimiento</div>
+
+            <div style="
+              color:#161226;
+              font-size:28px;
+              font-weight:900;
+            ">FCST: ${d.fcst}</div>
           </div>
         </div>
 
-        <div class="wom-section-title">👥 EQUIPO</div>
+        <div style="
+          color:#35108f;
+          font-size:30px;
+          font-weight:900;
+          margin-bottom:14px;
+        ">Equipo</div>
 
-        <div class="wom-table-head">
-          <span>Ejecutivo</span>
-          <span>Ventas MTD</span>
-          <span>Meta Individual</span>
-          <span>Cumplimiento</span>
+        <div>
+          ${datos.equipo.map(e => filaReporte(
+            primerNombre(e.nombre),
+            `${e.mtd} / ${e.meta} (${e.cumplimiento}%)`
+          )).join("")}
         </div>
 
-        ${datos.equipo.map(e => `
-          <div class="wom-table-row">
-            <span>${primerNombre(e.nombre)}</span>
-            <strong>${e.mtd}</strong>
-            <strong>${e.meta}</strong>
-            <div class="wom-pill">${e.cumplimiento}%</div>
-          </div>
-        `).join("")}
-
-        <div class="wom-month-total">
-          <span>👥 TOTAL EQUIPO</span>
-          <strong>${d.ventas_mtd} / ${d.meta_mes}</strong>
-          <div class="wom-pill">${d.cumplimiento_mes}%</div>
-        </div>
-
-        <div class="wom-footer">
-          <div class="wom-footer-star">★</div>
-          <div class="wom-footer-title">WOM STREET CHILOÉ</div>
-          <div class="wom-footer-sub">REPORTE COMERCIAL</div>
+        <div style="
+          margin-top:auto;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          color:#706989;
+          font-size:28px;
+          font-weight:900;
+          padding-top:26px;
+        ">
+          <span>Total equipo: ${d.ventas_mtd} / ${d.meta_mes}</span>
+          <span>${d.cumplimiento_mes}% mensual</span>
         </div>
       </div>
     </div>
@@ -584,7 +737,7 @@ async function descargarImagen(id, nombreArchivo){
 
   const canvas = await html2canvas(elemento,{
     scale:2,
-    backgroundColor:null,
+    backgroundColor:"#ffffff",
     useCORS:true
   });
 
