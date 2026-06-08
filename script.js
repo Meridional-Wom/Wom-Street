@@ -445,40 +445,92 @@ function primerNombre(nombre){
   return String(nombre || "").trim().split(" ")[0] || "";
 }
 
-function estilosReporte(){
-  return `
-    font-family: Arial, Helvetica, sans-serif;
-    box-sizing: border-box;
-  `;
-}
-
-function filaReporte(nombre, valor){
+function filaDia(e){
   return `
     <div style="
-      display:flex;
-      justify-content:space-between;
+      display:grid;
+      grid-template-columns:52px 1fr 120px;
       align-items:center;
       border-bottom:2px solid #eeeaf5;
-      padding:18px 0;
-      font-size:32px;
+      padding:10px 0;
+      font-size:24px;
       color:#161226;
     ">
-      <span>${nombre}</span>
-      <strong style="color:#35108f;">${valor}</strong>
+      <div style="
+        width:36px;
+        height:36px;
+        border-radius:50%;
+        background:#35108f;
+        color:white;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:18px;
+      ">●</div>
+
+      <div>${primerNombre(e.nombre)}</div>
+
+      <strong style="
+        text-align:right;
+        color:#35108f;
+        font-size:26px;
+      ">${e.ventas_dia}</strong>
     </div>
   `;
 }
 
-function generarHTMLAvanceDia(){
+function filaMes(e){
+  return `
+    <div style="
+      display:grid;
+      grid-template-columns:52px 1.4fr .8fr .9fr .9fr;
+      align-items:center;
+      border-bottom:2px solid #eeeaf5;
+      padding:10px 0;
+      font-size:21px;
+      color:#161226;
+    ">
+      <div style="
+        width:36px;
+        height:36px;
+        border-radius:50%;
+        background:#35108f;
+        color:white;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:18px;
+      ">●</div>
+
+      <div>${primerNombre(e.nombre)}</div>
+
+      <strong style="color:#35108f;text-align:center;">${e.mtd}</strong>
+
+      <div style="text-align:center;">${e.meta}</div>
+
+      <div style="
+        background:#ffe0f0;
+        color:#e11d48;
+        border-radius:12px;
+        padding:8px 12px;
+        font-weight:900;
+        text-align:center;
+      ">${e.cumplimiento}%</div>
+    </div>
+  `;
+}
+
+function generarHTMLReporte(){
   const d = datos.dashboard;
 
   return `
-    <div id="cardDia" style="
-      ${estilosReporte()}
+    <div id="cardReporte" style="
+      font-family:Arial, Helvetica, sans-serif;
+      box-sizing:border-box;
       width:1080px;
-      height:1080px;
+      height:1350px;
       background:linear-gradient(135deg,#25006d 0%,#35108f 45%,#681df2 78%,#ff2f93 100%);
-      padding:64px;
+      padding:34px;
       position:fixed;
       left:-9999px;
       top:0;
@@ -487,246 +539,226 @@ function generarHTMLAvanceDia(){
         width:100%;
         height:100%;
         background:#ffffff;
-        border-radius:48px;
-        padding:58px;
+        border-radius:42px;
+        padding:38px;
         display:flex;
         flex-direction:column;
+        overflow:hidden;
       ">
+
         <div style="
           display:flex;
           justify-content:space-between;
           align-items:flex-start;
           border-bottom:2px solid #eeeaf5;
-          padding-bottom:28px;
+          padding-bottom:22px;
         ">
           <div>
             <div style="
               color:#ff2f93;
               font-size:22px;
               font-weight:900;
-              letter-spacing:3px;
+              letter-spacing:2px;
             ">REPORTE COMERCIAL</div>
 
             <div style="
               color:#35108f;
-              font-size:36px;
+              font-size:34px;
               font-weight:900;
-              margin-top:8px;
+              margin-top:6px;
             ">WOM STREET CHILOÉ</div>
           </div>
 
           <div style="
-            color:#706989;
-            font-size:26px;
+            text-align:right;
+            color:#35108f;
             font-weight:900;
-          ">${horaReporte()} hrs</div>
+            font-size:22px;
+          ">
+            <div>${fechaReporte()}</div>
+            <div style="margin-top:6px;">${horaReporte()} hrs</div>
+          </div>
         </div>
 
         <div style="
-          color:#35108f;
-          font-size:76px;
-          font-weight:900;
-          margin:42px 0 28px;
-          line-height:1;
-        ">AVANCE</div>
-
-        <div style="
-          background:#f4f0fb;
-          border-radius:30px;
-          padding:34px 40px;
           display:flex;
-          justify-content:space-between;
           align-items:center;
-          margin-bottom:44px;
+          gap:22px;
+          margin:28px 0 16px;
         ">
-          <div>
-            <div style="
-              color:#706989;
-              font-size:28px;
-              font-weight:900;
-              margin-bottom:8px;
-            ">Ventas día / Meta día</div>
-
-            <div style="
-              color:#35108f;
-              font-size:82px;
-              font-weight:900;
-              line-height:1;
-            ">${d.ventas_dia} / ${d.meta_dia}</div>
-          </div>
+          <div style="
+            width:70px;
+            height:70px;
+            border-radius:50%;
+            background:#ffe0f0;
+            color:#ff2f93;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:34px;
+          ">📅</div>
 
           <div style="
-            color:#161226;
-            font-size:30px;
+            color:#35108f;
+            font-size:54px;
             font-weight:900;
-          ">Gestión diaria</div>
+            line-height:1;
+          ">AVANCE DEL DÍA</div>
+        </div>
+
+        <div style="
+          background:#fbedf7;
+          border-radius:24px;
+          padding:22px 34px;
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:24px;
+          margin-bottom:22px;
+        ">
+          <div style="border-right:2px solid #dfd3ef;">
+            <div style="color:#706989;font-size:18px;font-weight:900;text-transform:uppercase;">Ventas del día</div>
+            <div style="color:#ff2f93;font-size:54px;font-weight:900;">${d.ventas_dia}</div>
+          </div>
+
+          <div>
+            <div style="color:#706989;font-size:18px;font-weight:900;text-transform:uppercase;">Meta del día</div>
+            <div style="color:#ff2f93;font-size:54px;font-weight:900;">${d.meta_dia}</div>
+          </div>
         </div>
 
         <div style="
           color:#35108f;
-          font-size:30px;
-          font-weight:900;
-          margin-bottom:14px;
-        ">Equipo</div>
-
-        <div>
-          ${datos.equipo.map(e => filaReporte(primerNombre(e.nombre), e.ventas_dia)).join("")}
-        </div>
-
-        <div style="
-          margin-top:auto;
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          color:#706989;
           font-size:28px;
           font-weight:900;
-          padding-top:26px;
-        ">
-          <span>Total equipo: ${d.ventas_dia}</span>
-          <span>Actualizado ${horaReporte()} hrs</span>
-        </div>
-      </div>
-    </div>
-  `;
-}
+          margin:4px 0 8px;
+        ">VENTAS INDIVIDUALES DEL DÍA</div>
 
-function generarHTMLAvanceMensual(){
-  const d = datos.dashboard;
-
-  return `
-    <div id="cardMes" style="
-      ${estilosReporte()}
-      width:1080px;
-      height:1080px;
-      background:linear-gradient(135deg,#25006d 0%,#35108f 45%,#681df2 78%,#ff2f93 100%);
-      padding:64px;
-      position:fixed;
-      left:-9999px;
-      top:0;
-    ">
-      <div style="
-        width:100%;
-        height:100%;
-        background:#ffffff;
-        border-radius:48px;
-        padding:58px;
-        display:flex;
-        flex-direction:column;
-      ">
         <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:flex-start;
+          display:grid;
+          grid-template-columns:52px 1fr 120px;
+          color:#35108f;
+          font-size:17px;
+          font-weight:900;
+          border-top:2px solid #eeeaf5;
           border-bottom:2px solid #eeeaf5;
-          padding-bottom:28px;
+          padding:8px 0;
         ">
-          <div>
+          <div></div>
+          <div>Ejecutivo</div>
+          <div style="text-align:right;">Ventas del día</div>
+        </div>
+
+        <div>
+          ${datos.equipo.map(e => filaDia(e)).join("")}
+        </div>
+
+        <div style="
+          margin-top:30px;
+          padding:24px;
+          border-radius:30px;
+          background:linear-gradient(135deg,#f5efff,#ffffff);
+          border:2px solid #eeeaf5;
+        ">
+          <div style="
+            display:flex;
+            align-items:center;
+            gap:22px;
+            margin-bottom:16px;
+          ">
             <div style="
-              color:#ff2f93;
-              font-size:22px;
-              font-weight:900;
-              letter-spacing:3px;
-            ">REPORTE COMERCIAL</div>
+              width:70px;
+              height:70px;
+              border-radius:50%;
+              background:#efe8ff;
+              color:#35108f;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              font-size:34px;
+            ">📊</div>
 
             <div style="
               color:#35108f;
-              font-size:36px;
+              font-size:50px;
               font-weight:900;
-              margin-top:8px;
-            ">WOM STREET CHILOÉ</div>
+              line-height:1;
+            ">AVANCE MENSUAL</div>
           </div>
 
           <div style="
-            color:#706989;
+            background:#f4f0fb;
+            border-radius:22px;
+            padding:22px;
+            display:grid;
+            grid-template-columns:1fr 1fr 1fr 1fr;
+            gap:14px;
+            margin-bottom:20px;
+          ">
+            <div>
+              <div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Ventas MTD</div>
+              <div style="color:#35108f;font-size:42px;font-weight:900;">${d.ventas_mtd}</div>
+            </div>
+
+            <div>
+              <div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Meta mensual</div>
+              <div style="color:#35108f;font-size:42px;font-weight:900;">${d.meta_mes}</div>
+            </div>
+
+            <div>
+              <div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">% Cumplimiento</div>
+              <div style="color:#ff2f93;font-size:42px;font-weight:900;">${d.cumplimiento_mes}%</div>
+            </div>
+
+            <div>
+              <div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Diferencia</div>
+              <div style="color:#ff2f93;font-size:42px;font-weight:900;">${d.gap}</div>
+            </div>
+          </div>
+
+          <div style="
+            color:#35108f;
             font-size:26px;
             font-weight:900;
-          ">${horaReporte()} hrs</div>
-        </div>
+            margin-bottom:8px;
+          ">EQUIPO – VENTAS MTD</div>
 
-        <div style="
-          color:#35108f;
-          font-size:70px;
-          font-weight:900;
-          margin:42px 0 28px;
-          line-height:1;
-        ">AVANCE MENSUAL</div>
+          <div style="
+            display:grid;
+            grid-template-columns:52px 1.4fr .8fr .9fr .9fr;
+            color:#35108f;
+            font-size:16px;
+            font-weight:900;
+            border-top:2px solid #eeeaf5;
+            border-bottom:2px solid #eeeaf5;
+            padding:8px 0;
+          ">
+            <div></div>
+            <div>Ejecutivo</div>
+            <div style="text-align:center;">Ventas MTD</div>
+            <div style="text-align:center;">Meta individual</div>
+            <div style="text-align:center;">Cumplimiento</div>
+          </div>
 
-        <div style="
-          background:#f4f0fb;
-          border-radius:30px;
-          padding:34px 40px;
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          margin-bottom:44px;
-        ">
           <div>
-            <div style="
-              color:#706989;
-              font-size:28px;
-              font-weight:900;
-              margin-bottom:8px;
-            ">Ventas MTD / Meta mensual</div>
-
-            <div style="
-              color:#35108f;
-              font-size:82px;
-              font-weight:900;
-              line-height:1;
-            ">${d.ventas_mtd} / ${d.meta_mes}</div>
+            ${datos.equipo.map(e => filaMes(e)).join("")}
           </div>
 
-          <div style="text-align:right;">
-            <div style="
-              color:#ff2f93;
-              font-size:64px;
-              font-weight:900;
-              line-height:1;
-            ">${d.cumplimiento_mes}%</div>
-
-            <div style="
-              color:#706989;
-              font-size:24px;
-              font-weight:900;
-              margin-top:8px;
-            ">Cumplimiento</div>
-
-            <div style="
-              color:#161226;
-              font-size:28px;
-              font-weight:900;
-            ">FCST: ${d.fcst}</div>
+          <div style="
+            display:grid;
+            grid-template-columns:52px 1.4fr .8fr .9fr .9fr;
+            align-items:center;
+            padding-top:16px;
+            font-size:25px;
+            font-weight:900;
+          ">
+            <div style="color:#35108f;font-size:32px;">👥</div>
+            <div style="color:#35108f;">TOTAL EQUIPO</div>
+            <div style="color:#35108f;text-align:center;">${d.ventas_mtd}</div>
+            <div style="color:#161226;text-align:center;">${d.meta_mes}</div>
+            <div style="color:#ff2f93;text-align:center;font-size:36px;">${d.cumplimiento_mes}%</div>
           </div>
         </div>
 
-        <div style="
-          color:#35108f;
-          font-size:30px;
-          font-weight:900;
-          margin-bottom:14px;
-        ">Equipo</div>
-
-        <div>
-          ${datos.equipo.map(e => filaReporte(
-            primerNombre(e.nombre),
-            `${e.mtd} / ${e.meta} (${e.cumplimiento}%)`
-          )).join("")}
-        </div>
-
-        <div style="
-          margin-top:auto;
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          color:#706989;
-          font-size:28px;
-          font-weight:900;
-          padding-top:26px;
-        ">
-          <span>Total equipo: ${d.ventas_mtd} / ${d.meta_mes}</span>
-          <span>${d.cumplimiento_mes}% mensual</span>
-        </div>
       </div>
     </div>
   `;
@@ -758,18 +790,19 @@ async function descargarImagen(id, nombreArchivo){
   }
 }
 
-async function generarImagenAvanceDia(){
+async function generarImagenReporte(){
   const area = document.getElementById("shareArea");
-  area.innerHTML = generarHTMLAvanceDia();
-  await descargarImagen("cardDia","avance-dia-wom-street.png");
+  area.innerHTML = generarHTMLReporte();
+  await descargarImagen("cardReporte","reporte-comercial-wom-street.png");
   area.innerHTML = "";
 }
 
-async function generarImagenAvanceMensual(){
-  const area = document.getElementById("shareArea");
-  area.innerHTML = generarHTMLAvanceMensual();
-  await descargarImagen("cardMes","avance-mes-wom-street.png");
-  area.innerHTML = "";
+function generarImagenAvanceDia(){
+  return generarImagenReporte();
+}
+
+function generarImagenAvanceMensual(){
+  return generarImagenReporte();
 }
 
 iniciar();
