@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WOM Street Chiloé</title>
-  <link rel="stylesheet" href="styles.css?v=final">
+  <link rel="stylesheet" href="styles.css?v=1">
 </head>
 <body>
 
@@ -12,7 +12,7 @@
   <div class="loader-card">
     <div class="loader-logo">WOM</div>
     <h2>Street Chiloé</h2>
-    <p>Sincronizando control diario...</p>
+    <p>Sincronizando datos comerciales...</p>
     <div class="loader-bar"><span></span></div>
   </div>
 </div>
@@ -20,116 +20,63 @@
 <header class="header">
   <div>
     <h1>WOM <span>Street Chiloé</span></h1>
-    <p>Control comercial diario</p>
+    <p>Panel comercial y operativo</p>
   </div>
 
   <div class="header-actions">
-    <div class="update" id="ultimaActualizacion">Sincronizando...</div>
+    <div class="update" id="ultimaActualizacion">Actualizando...</div>
     <button class="refresh-btn" onclick="actualizarDatos()">🔄 Actualizar</button>
   </div>
 </header>
 
 <nav class="nav">
-  <button onclick="mostrar('inicio')">🏠 Inicio</button>
-  <button onclick="mostrar('biblioteca')">📚 Biblioteca</button>
-  <button onclick="mostrar('publicidad')">📢 Publicidad</button>
-  <button onclick="mostrar('links')">🔗 Links</button>
-  <button onclick="mostrar('lider')">🖥️ Líder</button>
+  <button onclick="mostrar('inicio')">Inicio</button>
+  <button onclick="mostrar('biblioteca')">Biblioteca</button>
+  <button onclick="mostrar('publicidad')">Publicidad</button>
+  <button onclick="mostrar('links')">Links</button>
+  <button onclick="mostrar('lider')">Líder</button>
 </nav>
 
 <main>
 
 <section id="inicio" class="section active">
-
   <div class="hero">
-    <h2>Team Axel</h2>
-    <p>Seguimiento diario de PP, proyección lineal, GAP, FCST y prospectos.</p>
+    <h2>¡Vamos por más!</h2>
+    <p>Seguimiento diario del avance comercial WOM Street Chiloé.</p>
   </div>
 
-  <div class="dashboard-grid">
+  <h3>Gestión diaria</h3>
+  <div class="grid" id="kpisDia"></div>
 
-    <div class="card main-kpi">
-      <div class="kpi-title">PP acumulado</div>
-      <div class="kpi-value" id="totalPP">0</div>
-      <p class="kpi-sub">Meta mensual: <strong id="metaMensual">0</strong></p>
-      <div class="progress"><span id="barraPP"></span></div>
-    </div>
+  <h3>Avance del mes</h3>
+  <div class="grid" id="kpisMes"></div>
 
-    <div class="card">
-      <div class="kpi-title">Deberían llevar</div>
-      <div class="kpi-value" id="deberianLlevar">0</div>
-      <p class="kpi-sub">Referencia de avance diario</p>
-    </div>
+  <h3>Proyección de cierre</h3>
+  <div class="grid" id="kpisForecast"></div>
 
-    <div class="card">
-      <div class="kpi-title">GAP</div>
-      <div class="kpi-value" id="gapEquipo">0</div>
-      <p class="kpi-sub">PP vs deberían llevar</p>
-    </div>
-
-    <div class="card">
-      <div class="kpi-title">Proyección lineal</div>
-      <div class="kpi-value" id="proyeccionEquipo">0%</div>
-      <p class="kpi-sub">
-        Estado: <span id="estadoEquipo" class="badge">Sin estado</span>
-      </p>
-      <div class="progress"><span id="barraProyeccion"></span></div>
-    </div>
-
-    <div class="card fcst-card">
-      <div class="kpi-title">FCST</div>
-      <div class="kpi-value" id="fcst">0</div>
-      <p class="kpi-sub">FCST vs meta: <strong id="fcstVsMeta">0%</strong></p>
-      <span id="estadoFcst" class="badge">Sin estado</span>
-    </div>
-
-    <div class="card">
-      <div class="kpi-title">Prospectos ingresados</div>
-      <div class="kpi-value" id="totalProspectos">0</div>
-      <p class="kpi-sub">Total equipo</p>
-    </div>
-
-  </div>
-
-  <div class="card reportes-sutil">
-    <div>
-      <h3>↗ Compartir avance</h3>
-      <p>Reporte rápido para WhatsApp.</p>
-    </div>
-    <div class="share-mini">
-      <button onclick="generarImagenAvanceDia()">Día</button>
-      <button onclick="generarImagenAvanceMensual()">Mes</button>
-    </div>
-  </div>
-
-  <h3>Ranking comercial</h3>
-  <div id="rankingEquipo" class="ranking-list"></div>
+  <h3>Estado del equipo</h3>
+  <div id="equipoCards" class="team-list"></div>
 
   <h3>Avisos importantes</h3>
   <div class="grid" id="avisosLista"></div>
-
 </section>
 
 <section id="biblioteca" class="section">
   <h2>Biblioteca</h2>
-  <p class="section-subtitle">Materiales, protocolos y documentos de apoyo.</p>
   <div class="grid" id="bibliotecaLista"></div>
 </section>
 
 <section id="publicidad" class="section">
   <h2>Publicidad</h2>
-  <p class="section-subtitle">Material comercial y campañas vigentes.</p>
   <div class="grid" id="publicidadLista"></div>
 </section>
 
 <section id="links" class="section">
   <h2>Zona de Links</h2>
-  <p class="section-subtitle">Accesos importantes para la operación.</p>
   <div class="grid" id="linksLista"></div>
 </section>
 
 <section id="lider" class="section">
-
   <div id="loginLider" class="card login">
     <h2>Acceso Líder</h2>
     <p>Ingresa el código para ver información privada.</p>
@@ -139,36 +86,27 @@
   </div>
 
   <div id="panelLider" class="private-panel hidden">
-
-    <div class="leader-hero">
-      <h2>🖥️ Centro de Control</h2>
-      <p>Reportería, rutas, reembolsos y seguimiento comercial.</p>
-    </div>
+    <h2>Panel Líder</h2>
 
     <div class="card report-panel">
       <h3>Reportes para WhatsApp</h3>
-      <p class="note">Comparte imágenes profesionales con avance grupal e individual.</p>
+      <p class="note">Genera imágenes con avance grupal e individual.</p>
 
       <div class="share-buttons">
-        <button onclick="generarImagenAvanceDia()">📤 Compartir Avance del Día</button>
-        <button onclick="generarImagenAvanceMensual()">📈 Compartir Avance del Mes</button>
+        <button onclick="generarImagenAvanceDia()">📤 Generar Avance del Día</button>
+        <button onclick="generarImagenAvanceMensual()">📈 Generar Avance del Mes</button>
       </div>
     </div>
 
-    <h3>Resumen equipo</h3>
-    <div id="liderResumen" class="grid"></div>
-
-    <h3>Ranking equipo</h3>
-    <div id="liderEquipo" class="ranking-list"></div>
+    <h3>Ventas individuales</h3>
+    <div id="liderEquipo" class="team-list"></div>
 
     <h3>Rutas</h3>
     <div class="grid" id="rutasLista"></div>
 
     <h3>Reembolsos</h3>
     <div class="grid" id="reembolsosLista"></div>
-
   </div>
-
 </section>
 
 </main>
@@ -176,6 +114,6 @@
 <div id="shareArea"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=final"></script>
+<script src="script.js?v=1"></script>
 </body>
 </html>
