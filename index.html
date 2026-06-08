@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WOM Street Chiloé</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
@@ -17,62 +17,189 @@
   </div>
 </div>
 
-<header class="header">
-  <div>
-    <h1>WOM <span>Street Chiloé</span></h1>
-    <p>Panel comercial y operativo</p>
+<header class="top-header">
+  <div class="brand-zone">
+    <div class="brand-logo">WOM</div>
+    <div>
+      <h1>WOM STREET CHILOÉ</h1>
+      <p>Centro de Operaciones Comerciales</p>
+    </div>
   </div>
 
-  <div class="header-actions">
-    <div class="update" id="ultimaActualizacion">Sincronizando...</div>
-    <button class="refresh-btn" onclick="actualizarDatos()">🔄 Actualizar</button>
+  <div class="sync-zone">
+    <div class="sync-status">
+      <span></span>
+      <strong>Datos actualizados</strong>
+      <p id="fechaPrincipal">Actualizando...</p>
+    </div>
+
+    <button class="refresh-button" onclick="actualizarDatos()">
+      🔄 <span>Actualizar datos</span>
+    </button>
   </div>
 </header>
 
 <nav class="nav">
-  <button onclick="mostrar('inicio')">Inicio</button>
-  <button onclick="mostrar('biblioteca')">Biblioteca</button>
-  <button onclick="mostrar('publicidad')">Publicidad</button>
-  <button onclick="mostrar('links')">Links</button>
-  <button onclick="mostrar('lider')">Líder</button>
+  <button onclick="mostrar('inicio')">🏠<span>Inicio</span></button>
+  <button onclick="mostrar('biblioteca')">📖<span>Biblioteca</span></button>
+  <button onclick="mostrar('publicidad')">📣<span>Publicidad</span></button>
+  <button onclick="mostrar('links')">🔗<span>Links</span></button>
+  <button onclick="mostrar('lider')">🖥️<span>Líder</span></button>
 </nav>
 
 <main>
 
 <section id="inicio" class="section active">
-  <div class="hero">
-    <h2>¡Vamos por más!</h2>
-    <p>Seguimiento diario del avance comercial WOM Street Chiloé.</p>
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-icon pink">📱</div>
+      <div>
+        <p>Ventas día</p>
+        <h2 id="ventasDiaHero">0</h2>
+        <small id="metaDiaHero">Meta diaria: 0</small>
+      </div>
+      <div class="mini-progress"><span id="barDiaHero"></span></div>
+      <small id="porcentajeDiaHero">0%</small>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon purple">📅</div>
+      <div>
+        <p>Ventas MTD</p>
+        <h2 id="ventasMtdHero">0</h2>
+        <small id="metaMesHero">Meta mensual: 0</small>
+      </div>
+      <div class="mini-progress"><span id="barMesHero"></span></div>
+      <small id="porcentajeMesHero">0%</small>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon pink">📈</div>
+      <div>
+        <p>FCST</p>
+        <h2 id="fcstHero">0</h2>
+        <small>Proyección de cierre</small>
+      </div>
+      <div class="mini-progress"><span id="barFcstHero"></span></div>
+      <small id="porcentajeFcstHero">0%</small>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon purple">🎯</div>
+      <div>
+        <p>Cumplimiento mes</p>
+        <h2 id="cumplimientoHero">0%</h2>
+        <small>Avance mensual</small>
+      </div>
+      <div class="mini-progress"><span id="barCumplimientoHero"></span></div>
+      <small id="cumplimientoMiniHero">0%</small>
+    </div>
   </div>
 
-  <h3>Gestión diaria</h3>
-  <div class="grid" id="kpisDia"></div>
+  <div class="main-dashboard">
+    <div class="monthly-goal-card">
+      <div>
+        <p>Meta mensual</p>
+        <h2 id="metaMensualTexto">0 / 0</h2>
+        <h4 id="gapTexto">Diferencia contra meta: 0</h4>
+        <div class="large-progress"><span id="barraMes"></span></div>
 
-  <h3>Avance del mes</h3>
-  <div class="grid" id="kpisMes"></div>
+        <div class="motivation">
+          <div>★</div>
+          <span>
+            <strong>¡Vamos por más!</strong>
+            Cada venta nos acerca al objetivo.
+          </span>
+        </div>
+      </div>
 
-  <h3>Proyección de cierre</h3>
-  <div class="grid" id="kpisForecast"></div>
+      <div class="circle-progress">
+        <div>
+          <strong id="circlePercent">0%</strong>
+          <span>Cumplimiento</span>
+        </div>
+      </div>
+    </div>
 
-  <h3>Estado del equipo</h3>
-  <div id="equipoCards" class="team-list"></div>
+    <div class="status-card" id="estadoComercial">
+      <div class="status-icon">↘</div>
+      <h2>Bajo meta</h2>
+      <p>Necesitamos aumentar el ritmo para alcanzar la meta mensual.</p>
+    </div>
+  </div>
 
-  <h3>Avisos importantes</h3>
-  <div class="grid" id="avisosLista"></div>
+  <div class="content-grid">
+    <div class="panel-card">
+      <div class="panel-head">
+        <h3>📱 Ventas del día</h3>
+        <div class="panel-date" id="fechaVentasDia">Actualizando...</div>
+      </div>
+      <div id="ventasDiaLista"></div>
+    </div>
+
+    <div class="panel-card team-panel">
+      <div class="panel-head">
+        <h3>👥 Equipo comercial</h3>
+        <button class="soft-button" onclick="mostrar('lider')">Ver detalle</button>
+      </div>
+      <div class="team-table-head">
+        <span>Ejecutivo</span>
+        <span>Meta</span>
+        <span>MTD</span>
+        <span>Cump.</span>
+      </div>
+      <div id="equipoCards"></div>
+    </div>
+
+    <div class="panel-card reporteria-card">
+      <div class="panel-head">
+        <h3>Reportería</h3>
+        <span>↗</span>
+      </div>
+      <p>Comparte la información de forma rápida.</p>
+      <button onclick="generarImagenAvanceDia()">📤 Compartir Avance del Día</button>
+      <button onclick="generarImagenAvanceMensual()">📊 Compartir Avance del Mes</button>
+      <button onclick="generarImagenAvanceMensual()">📋 Compartir Resumen Ejecutivo</button>
+    </div>
+  </div>
+
+  <div class="panel-card">
+    <div class="panel-head">
+      <h3>📣 Avisos importantes</h3>
+      <button class="soft-button">Ver todos</button>
+    </div>
+    <div class="grid" id="avisosLista"></div>
+  </div>
+
+  <div class="panel-card">
+    <h3>Accesos rápidos</h3>
+    <div class="quick-grid">
+      <button onclick="mostrar('biblioteca')">📖<span>Biblioteca</span><small>Materiales y documentos</small></button>
+      <button onclick="mostrar('publicidad')">🖼️<span>Publicidad</span><small>Piezas y material comercial</small></button>
+      <button onclick="mostrar('links')">🔗<span>Links</span><small>Herramientas y sistemas</small></button>
+      <button onclick="mostrar('lider')">📍<span>Rutas</span><small>Planificación semanal</small></button>
+      <button onclick="mostrar('lider')">💳<span>Reembolsos</span><small>Solicitudes y estados</small></button>
+    </div>
+  </div>
+
 </section>
 
 <section id="biblioteca" class="section">
-  <h2>Biblioteca</h2>
+  <h2>Biblioteca Comercial</h2>
+  <p class="section-subtitle">Materiales, protocolos, capacitaciones y documentos de apoyo.</p>
   <div class="grid" id="bibliotecaLista"></div>
 </section>
 
 <section id="publicidad" class="section">
-  <h2>Publicidad</h2>
+  <h2>Publicidad y campañas</h2>
+  <p class="section-subtitle">Material comercial y piezas vigentes para terreno.</p>
   <div class="grid" id="publicidadLista"></div>
 </section>
 
 <section id="links" class="section">
   <h2>Zona de Links</h2>
+  <p class="section-subtitle">Accesos rápidos a herramientas importantes.</p>
   <div class="grid" id="linksLista"></div>
 </section>
 
@@ -80,21 +207,28 @@
   <div id="loginLider" class="card login">
     <h2>Acceso Líder</h2>
     <p>Ingresa el código para ver información privada.</p>
-    <input type="password" id="codigo" placeholder="Código de acceso">
+    <input type="password" id="codigo" placeholder="Código de acceso" />
     <button onclick="validarCodigo()">Ingresar</button>
     <p id="error"></p>
   </div>
 
   <div id="panelLider" class="private-panel hidden">
-    <h2>Panel Líder</h2>
+    <div class="leader-header">
+      <div>
+        <p class="eyebrow">Modo administración</p>
+        <h2>Panel Líder</h2>
+      </div>
+      <span>Axel Rojas · WOM Street Chiloé</span>
+    </div>
 
     <div class="card report-panel">
-      <h3>Reportes para WhatsApp</h3>
-      <p class="note">Genera imágenes con avance grupal e individual.</p>
+      <h3>Reportería</h3>
+      <p class="note">Comparte imágenes profesionales con avance grupal e individual.</p>
 
       <div class="share-buttons">
-        <button onclick="generarImagenAvanceDia()">📤 Generar Avance del Día</button>
-        <button onclick="generarImagenAvanceMensual()">📈 Generar Avance del Mes</button>
+        <button onclick="generarImagenAvanceDia()">📤 Compartir Avance del Día</button>
+        <button onclick="generarImagenAvanceMensual()">📈 Compartir Avance del Mes</button>
+        <button onclick="generarImagenAvanceMensual()">📊 Compartir Resumen Ejecutivo</button>
       </div>
     </div>
 
