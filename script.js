@@ -17,10 +17,8 @@ async function iniciar(){
   try{
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
-
     datos = transformarDatos(data);
     renderTodo();
-
   }catch(error){
     console.error("Error al cargar datos:", error);
     alert("No se pudieron cargar los datos desde Google Sheets.");
@@ -30,26 +28,23 @@ async function iniciar(){
 }
 
 async function actualizarDatos(){
-  const boton = document.querySelector(".refresh-button");
+  const boton = document.querySelector(".refresh-btn");
 
   if(boton){
-    boton.innerHTML = "⏳ <span>Actualizando...</span>";
+    boton.textContent = "Actualizando...";
     boton.disabled = true;
   }
 
   try{
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
-
     datos = transformarDatos(data);
     renderTodo();
-
   }catch(error){
-    console.error("Error al actualizar datos:", error);
     alert("No se pudieron actualizar los datos.");
   }finally{
     if(boton){
-      boton.innerHTML = "🔄 <span>Actualizar datos</span>";
+      boton.textContent = "🔄 Actualizar";
       boton.disabled = false;
     }
   }
@@ -66,47 +61,37 @@ function transformarDatos(data){
       meta_mes:Number(dashboard["Meta mes"] || dashboard["Meta Mes"] || 0),
       fcst:Number(dashboard["FCST"] || dashboard["FCST manual"] || 0)
     },
-
     equipo:(data.equipo || []).map(e => ({
       nombre:e["Ejecutivo"] || "",
-      ventas_dia:Number(e["Ventas Día"] || e["Ventas Dia"] || e["Hoy"] || 0),
+      ventas_dia:Number(e["Ventas Día"] || e["Hoy"] || 0),
       mtd:Number(e["Ventas MTD"] || e["MTD"] || 0),
       meta:Number(e["Meta Mes"] || e["Meta"] || 0),
-      observacion:e["Observación"] || e["Observacion"] || ""
+      observacion:e["Observación"] || ""
     })),
-
     avisos:(data.avisos || []).map(a => ({
-      titulo:a["Título"] || a["Titulo"] || "",
-      descripcion:a["Descripción"] || a["Descripcion"] || "",
-      fecha:a["Fecha"] || "",
-      prioridad:a["Prioridad"] || ""
+      titulo:a["Título"] || "",
+      descripcion:a["Descripción"] || ""
     })),
-
     biblioteca:(data.biblioteca || []).map(b => ({
-      titulo:b["Título"] || b["Titulo"] || "",
-      descripcion:b["Descripción"] || b["Descripcion"] || "",
-      url:b["Link"] || b["URL"] || "#"
+      titulo:b["Título"] || "",
+      descripcion:b["Descripción"] || "",
+      url:b["Link"] || "#"
     })),
-
     publicidad:(data.publicidad || []).map(p => ({
-      titulo:p["Título"] || p["Titulo"] || "",
-      descripcion:p["Descripción"] || p["Descripcion"] || "",
-      url:p["Link"] || p["URL"] || "#"
+      titulo:p["Título"] || "",
+      descripcion:p["Descripción"] || "",
+      url:p["Link"] || "#"
     })),
-
     links:(data.links || []).map(l => ({
       nombre:l["Nombre"] || "",
-      categoria:l["Categoría"] || l["Categoria"] || "",
-      url:l["URL"] || l["Link"] || "#"
+      categoria:l["Categoría"] || "",
+      url:l["URL"] || "#"
     })),
-
     rutas:(data.rutas || []).map(r => ({
-      dia:r["Día"] || r["Dia"] || r["Fecha"] || "",
+      dia:r["Día"] || r["Fecha"] || "",
       sector:r["Sector"] || "",
-      responsable:r["Responsable"] || "",
-      estado:r["Estado"] || ""
+      responsable:r["Responsable"] || ""
     })),
-
     reembolsos:(data.reembolsos || []).map(r => ({
       ejecutivo:r["Ejecutivo"] || "",
       monto:r["Monto"] || "",
@@ -117,7 +102,6 @@ function transformarDatos(data){
 
 function mostrar(id){
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
-
   const seccion = document.getElementById(id);
   if(seccion){
     seccion.classList.add("active");
@@ -139,12 +123,8 @@ function validarCodigo(){
 }
 
 function porcentaje(valor, meta){
-  if(!meta || meta === 0) return 0;
+  if(!meta) return 0;
   return Math.round((valor / meta) * 100);
-}
-
-function limitarPorcentaje(p){
-  return Math.min(Math.max(p,0),100);
 }
 
 function color(p){
@@ -164,7 +144,6 @@ function calcular(){
 
   d.cumplimiento_dia = porcentaje(d.ventas_dia, d.meta_dia);
   d.cumplimiento_mes = porcentaje(d.ventas_mtd, d.meta_mes);
-  d.cumplimiento_fcst = porcentaje(d.fcst, d.meta_mes);
   d.gap = d.ventas_mtd - d.meta_mes;
   d.diferencia_fcst = d.fcst - d.meta_mes;
   d.estado_fcst = porcentaje(d.fcst, d.meta_mes);
@@ -178,8 +157,7 @@ function calcular(){
 function renderTodo(){
   calcular();
   renderHeader();
-  renderDashboardEjecutivo();
-  renderVentasDia();
+  renderKpis();
   renderEquipo();
   renderAvisos();
   renderBiblioteca();
@@ -189,34 +167,304 @@ function renderTodo(){
 }
 
 function renderHeader(){
-  document.getElementById("fechaPrincipal").textContent =
-    fechaReporte() + " · " + horaReporte() + " hrs";
+  document.getElementById("ultimaActualizacion").textContent = "Actualizado: " + fechaCorta();
 }
 
-function renderDashboardEjecutivo(){
+function kpi(titulo, valor, subtitulo, progreso){
+  const barra = progreso !== undefined
+    ? `<div class="progress"><span style="width:${Math.min(progreso,100)}%"></span></div>`
+    : "";
+
+  return `
+    <div class="card">
+      <div class="kpi-title">${titulo}</div>
+      <div class="kpi-value">${valor}</div>
+      <p class="kpi-sub">${subtitulo || ""}</p>
+      ${barra}
+    </div>
+  `;
+}
+
+function renderKpis(){
   const d = datos.dashboard;
 
-  document.getElementById("ventasDiaHero").textContent = d.ventas_dia;
-  document.getElementById("metaDiaHero").textContent = "Meta diaria: " + d.meta_dia;
-  document.getElementById("porcentajeDiaHero").textContent = d.cumplimiento_dia + "%";
-  document.getElementById("barDiaHero").style.width = limitarPorcentaje(d.cumplimiento_dia) + "%";
+  document.getElementById("kpisDia").innerHTML = `
+    ${kpi("Ventas del día", d.ventas_dia, "Gestión diaria")}
+    ${kpi("Meta diaria", d.meta_dia, "Objetivo del día")}
+    ${kpi("Cumplimiento diario", d.cumplimiento_dia + "%", estado(d.cumplimiento_dia), d.cumplimiento_dia)}
+  `;
 
-  document.getElementById("ventasMtdHero").textContent = d.ventas_mtd;
-  document.getElementById("metaMesHero").textContent = "Meta mensual: " + d.meta_mes;
-  document.getElementById("porcentajeMesHero").textContent = d.cumplimiento_mes + "%";
-  document.getElementById("barMesHero").style.width = limitarPorcentaje(d.cumplimiento_mes) + "%";
+  document.getElementById("kpisMes").innerHTML = `
+    ${kpi("Ventas MTD", d.ventas_mtd, "Acumulado del mes")}
+    ${kpi("Meta mensual", d.meta_mes, "Objetivo mensual")}
+    ${kpi("Cumplimiento mes", d.cumplimiento_mes + "%", estado(d.cumplimiento_mes), d.cumplimiento_mes)}
+    ${kpi("GAP", d.gap, "Diferencia contra meta")}
+  `;
 
-  document.getElementById("fcstHero").textContent = d.fcst;
-  document.getElementById("porcentajeFcstHero").textContent = d.cumplimiento_fcst + "%";
-  document.getElementById("barFcstHero").style.width = limitarPorcentaje(d.cumplimiento_fcst) + "%";
+  document.getElementById("kpisForecast").innerHTML = `
+    ${kpi("FCST", d.fcst, "Proyección de cierre")}
+    ${kpi("Diferencia FCST", d.diferencia_fcst, "Forecast vs meta")}
+    <div class="card">
+      <div class="kpi-title">Estado de cierre</div>
+      <div class="kpi-value"><span class="badge ${color(d.estado_fcst)}">${estado(d.estado_fcst)}</span></div>
+      <p class="kpi-sub">Según la proyección actual</p>
+    </div>
+  `;
+}
 
-  document.getElementById("cumplimientoHero").textContent = d.cumplimiento_mes + "%";
-  document.getElementById("cumplimientoMiniHero").textContent = d.cumplimiento_mes + "%";
-  document.getElementById("barCumplimientoHero").style.width = limitarPorcentaje(d.cumplimiento_mes) + "%";
+function renderEquipo(){
+  document.getElementById("equipoCards").innerHTML = datos.equipo.map(e => `
+    <div class="person">
+      <div class="person-top">
+        <div class="person-name">${e.nombre}</div>
+        <span class="badge ${color(e.cumplimiento)}">${estado(e.cumplimiento)}</span>
+      </div>
+      <div class="person-grid">
+        <div class="mini"><span>Hoy</span><strong>${e.ventas_dia}</strong></div>
+        <div class="mini"><span>MTD</span><strong>${e.mtd}</strong></div>
+        <div class="mini"><span>Meta</span><strong>${e.meta}</strong></div>
+        <div class="mini"><span>Cump.</span><strong>${e.cumplimiento}%</strong></div>
+      </div>
+    </div>
+  `).join("");
+}
 
-  document.getElementById("metaMensualTexto").textContent = d.ventas_mtd + " / " + d.meta_mes;
-  document.getElementById("gapTexto").textContent = "Diferencia contra meta: " + d.gap;
-  document.getElementById("barraMes").style.width = limitarPorcentaje(d.cumplimiento_mes) + "%";
-  document.getElementById("circlePercent").textContent = d.cumplimiento_mes + "%";
+function renderAvisos(){
+  document.getElementById("avisosLista").innerHTML = datos.avisos.map(a => `
+    <div class="card"><h3>${a.titulo}</h3><p>${a.descripcion}</p></div>
+  `).join("");
+}
 
-  const grados = limitarPorcentaje(d.cum
+function renderBiblioteca(){
+  document.getElementById("bibliotecaLista").innerHTML = datos.biblioteca.map(b => `
+    <div class="card"><h3>${b.titulo}</h3><p>${b.descripcion}</p><a href="${b.url}" target="_blank">Abrir</a></div>
+  `).join("");
+}
+
+function renderPublicidad(){
+  document.getElementById("publicidadLista").innerHTML = datos.publicidad.map(p => `
+    <div class="card"><h3>${p.titulo}</h3><p>${p.descripcion}</p><a href="${p.url}" target="_blank">Ver material</a></div>
+  `).join("");
+}
+
+function renderLinks(){
+  document.getElementById("linksLista").innerHTML = datos.links.map(l => `
+    <div class="card"><h3>${l.nombre}</h3><p>${l.categoria}</p><a href="${l.url}" target="_blank">Abrir enlace</a></div>
+  `).join("");
+}
+
+function renderPrivado(){
+  document.getElementById("liderEquipo").innerHTML = document.getElementById("equipoCards").innerHTML;
+
+  document.getElementById("rutasLista").innerHTML = datos.rutas.map(r => `
+    <div class="card"><h3>${r.dia}</h3><p>${r.sector}</p><small>${r.responsable}</small></div>
+  `).join("");
+
+  document.getElementById("reembolsosLista").innerHTML = datos.reembolsos.map(r => `
+    <div class="card"><h3>${r.ejecutivo}</h3><p>Monto: ${r.monto}</p><span class="badge yellow">${r.estado}</span></div>
+  `).join("");
+}
+
+function fechaReporte(){
+  const fecha = new Date();
+  const dias = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+  const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+  return `${dias[fecha.getDay()]} ${fecha.getDate()} de ${meses[fecha.getMonth()]} de ${fecha.getFullYear()}`;
+}
+
+function horaReporte(){
+  return new Date().toLocaleTimeString("es-CL",{
+    hour:"2-digit",
+    minute:"2-digit",
+    hour12:false
+  });
+}
+
+function fechaCorta(){
+  return `${fechaReporte()} · ${horaReporte()} hrs`;
+}
+
+function primerNombre(nombre){
+  return String(nombre || "").split(" ")[0];
+}
+
+function generarHTMLAvanceDia(){
+  const d = datos.dashboard;
+
+  return `
+    <div class="share-card" id="cardDia">
+      <div class="wom-report-card">
+
+        <div class="wom-report-header">
+          <div>
+            <div class="wom-report-label">REPORTE COMERCIAL</div>
+            <div class="wom-report-brand">WOM STREET CHILOÉ</div>
+          </div>
+          <div class="wom-logo">WOM</div>
+        </div>
+
+        <div class="wom-report-title">AVANCE DEL DÍA</div>
+
+        <div class="wom-report-date">
+          <span>📅 ${fechaReporte()}</span>
+          <span>🕘 ${horaReporte()} hrs</span>
+        </div>
+
+        <div class="wom-main-box">
+          <div class="wom-icon">🛍️</div>
+
+          <div>
+            <div class="wom-metric-label">Ventas día</div>
+            <div class="wom-metric-number">${d.ventas_dia} / ${d.meta_dia}</div>
+          </div>
+
+          <div>
+            <div class="wom-metric-label">Meta diaria</div>
+            <div class="wom-small-number">${d.meta_dia}</div>
+          </div>
+        </div>
+
+        <div class="wom-total-bar">
+          <span>👥 Total equipo</span>
+          <strong>${d.ventas_dia}</strong>
+        </div>
+
+        <div class="wom-section-title">👥 EQUIPO</div>
+
+        <div class="wom-team-table">
+          ${datos.equipo.map(e => `
+            <div class="wom-team-row">
+              <span>${primerNombre(e.nombre)}</span>
+              <strong>${e.ventas_dia}</strong>
+            </div>
+          `).join("")}
+        </div>
+
+        <div class="wom-footer">
+          <div class="wom-footer-star">★</div>
+          <div class="wom-footer-title">WOM STREET CHILOÉ</div>
+          <div class="wom-footer-sub">REPORTE COMERCIAL</div>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+function generarHTMLAvanceMensual(){
+  const d = datos.dashboard;
+
+  return `
+    <div class="share-card" id="cardMes">
+      <div class="wom-report-card">
+
+        <div class="wom-report-header">
+          <div>
+            <div class="wom-report-label">REPORTE COMERCIAL</div>
+            <div class="wom-report-brand">WOM STREET CHILOÉ</div>
+          </div>
+          <div class="wom-logo">WOM</div>
+        </div>
+
+        <div class="wom-report-title">AVANCE DEL MES</div>
+
+        <div class="wom-report-date">
+          <span>📅 ${fechaReporte()}</span>
+          <span>🕘 ${horaReporte()} hrs</span>
+        </div>
+
+        <div class="wom-month-summary">
+          <div class="wom-month-cell">
+            <div class="wom-month-label">Ventas MTD</div>
+            <div class="wom-month-number">${d.ventas_mtd} / ${d.meta_mes}</div>
+            <div class="wom-month-sub">Meta mensual: ${d.meta_mes}</div>
+          </div>
+
+          <div class="wom-month-cell">
+            <div class="wom-month-label">Cumplimiento</div>
+            <div class="wom-month-percent">${d.cumplimiento_mes}%</div>
+          </div>
+
+          <div class="wom-month-cell">
+            <div class="wom-month-label">FCST</div>
+            <div class="wom-month-number">${d.fcst}</div>
+            <div class="wom-month-sub">Proyección de cierre</div>
+          </div>
+        </div>
+
+        <div class="wom-section-title">👥 EQUIPO</div>
+
+        <div class="wom-table-head">
+          <span>Ejecutivo</span>
+          <span>Ventas MTD</span>
+          <span>Meta Individual</span>
+          <span>Cumplimiento</span>
+        </div>
+
+        ${datos.equipo.map(e => `
+          <div class="wom-table-row">
+            <span>${primerNombre(e.nombre)}</span>
+            <strong>${e.mtd}</strong>
+            <strong>${e.meta}</strong>
+            <div class="wom-pill">${e.cumplimiento}%</div>
+          </div>
+        `).join("")}
+
+        <div class="wom-month-total">
+          <span>👥 TOTAL EQUIPO</span>
+          <strong>${d.ventas_mtd} / ${d.meta_mes}</strong>
+          <div class="wom-pill">${d.cumplimiento_mes}%</div>
+        </div>
+
+        <div class="wom-footer">
+          <div class="wom-footer-star">★</div>
+          <div class="wom-footer-title">WOM STREET CHILOÉ</div>
+          <div class="wom-footer-sub">REPORTE COMERCIAL</div>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+async function descargarImagen(id, nombreArchivo){
+  const elemento = document.getElementById(id);
+  const canvas = await html2canvas(elemento,{
+    scale:2,
+    backgroundColor:null,
+    useCORS:true
+  });
+
+  const blob = await new Promise(resolve => canvas.toBlob(resolve,"image/png"));
+  const file = new File([blob], nombreArchivo, {type:"image/png"});
+
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    await navigator.share({
+      files:[file],
+      title:"WOM Street Chiloé",
+      text:"Reporte comercial WOM Street Chiloé"
+    });
+  }else{
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = nombreArchivo;
+    link.click();
+  }
+}
+
+async function generarImagenAvanceDia(){
+  const area = document.getElementById("shareArea");
+  area.innerHTML = generarHTMLAvanceDia();
+  await descargarImagen("cardDia","avance-dia-wom-street.png");
+  area.innerHTML = "";
+}
+
+async function generarImagenAvanceMensual(){
+  const area = document.getElementById("shareArea");
+  area.innerHTML = generarHTMLAvanceMensual();
+  await descargarImagen("cardMes","avance-mes-wom-street.png");
+  area.innerHTML = "";
+}
+
+iniciar();
