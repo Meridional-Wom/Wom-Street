@@ -5,27 +5,20 @@ let datos = {};
 
 function ocultarLoader(){
   const loader = document.getElementById("loader");
-
   if(loader){
     loader.style.opacity = "0";
-    setTimeout(() => {
-      loader.remove();
-    }, 500);
+    setTimeout(() => loader.remove(), 500);
   }
 }
 
-setTimeout(() => {
-  ocultarLoader();
-}, 8000);
+setTimeout(() => ocultarLoader(), 8000);
 
 async function iniciar(){
   try{
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
-
     datos = transformarDatos(data);
     renderTodo();
-
   }catch(error){
     console.error("Error al cargar datos:", error);
     alert("No se pudieron cargar los datos desde Google Sheets.");
@@ -45,10 +38,8 @@ async function actualizarDatos(){
   try{
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
-
     datos = transformarDatos(data);
     renderTodo();
-
   }catch(error){
     console.error("Error al actualizar datos:", error);
     alert("No se pudieron actualizar los datos.");
@@ -60,119 +51,142 @@ async function actualizarDatos(){
   }
 }
 
+function normalizar(texto){
+  return String(texto || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function obtener(obj, nombres){
+  if(!obj) return "";
+
+  const claves = Object.keys(obj);
+
+  for(const nombre of nombres){
+    const buscado = normalizar(nombre);
+    const clave = claves.find(k => normalizar(k) === buscado);
+    if(clave && obj[clave] !== "" && obj[clave] !== null && obj[clave] !== undefined){
+      return obj[clave];
+    }
+  }
+
+  return "";
+}
+
 function numero(valor){
+  if(valor === "" || valor === null || valor === undefined) return 0;
+
+  if(typeof valor === "string"){
+    valor = valor.replace(",", ".").replace("%", "").trim();
+  }
+
   const n = Number(valor);
   return isNaN(n) ? 0 : n;
+}
+
+function formatoFecha(valor){
+  if(!valor) return fechaCorta();
+
+  const fecha = new Date(valor);
+
+  if(!isNaN(fecha.getTime())){
+    return fecha.toLocaleDateString("es-CL",{
+      day:"2-digit",
+      month:"2-digit",
+      year:"numeric"
+    }) + " " + fecha.toLocaleTimeString("es-CL",{
+      hour:"2-digit",
+      minute:"2-digit",
+      hour12:false
+    }) + " hrs";
+  }
+
+  return valor;
 }
 
 function transformarDatos(data){
   const dashboard = data.dashboard || {};
 
+  const equipo = (data.equipo || []).map(e => ({
+    nombre: obtener(e, ["Ejecutivo"]),
+    ventas_dia: numero(obtener(e, ["Ventas Día","Ventas Dia","Ventas día","Hoy"])),
+    mtd: numero(obtener(e, ["Ventas MTD","MTD"])),
+    meta: numero(obtener(e, ["Meta Mes","Meta mes","Meta"])),
+    observacion: obtener(e, ["Observación","Observacion"])
+  })).filter(e => e.nombre);
+
+  const ventasDiaEquipo = equipo.reduce((total, e) => total + e.ventas_dia, 0);
+  const ventasMTDEquipo = equipo.reduce((total, e) => total + e.mtd, 0);
+
+  const dashboardFinal = {
+    ventas_dia: numero(obtener(dashboard, ["Ventas día","Ventas Día","Ventas dia","Ventas Dia"])),
+    meta_dia: numero(obtener(dashboard, ["Meta día","Meta Día","Meta dia","Meta Dia"])),
+    ventas_mtd: numero(obtener(dashboard, ["Ventas MTD","MTD","Ventas acumuladas"])),
+    meta_mes: numero(obtener(dashboard, ["Meta mes","Meta Mes","Meta mensual"])),
+    fcst: numero(obtener(dashboard, ["FCST","FCST manual","FCST Manual","Forecast","FCST auto"]))
+  };
+
+  if(dashboardFinal.ventas_dia === 0 && ventasDiaEquipo > 0){
+    dashboardFinal.ventas_dia = ventasDiaEquipo;
+  }
+
+  if(dashboardFinal.ventas_mtd === 0 && ventasMTDEquipo > 0){
+    dashboardFinal.ventas_mtd = ventasMTDEquipo;
+  }
+
   return {
-    ultima_actualizacion:
-      dashboard["Última actualización"] ||
-      dashboard["Ultima actualización"] ||
-      dashboard["Actualización"] ||
-      "",
+    ultima_actualizacion: obtener(dashboard, [
+      "Última actualización",
+      "Ultima actualización",
+      "Actualización",
+      "Fecha actualización"
+    ]),
 
-    dashboard:{
-      ventas_dia: numero(
-        dashboard["Ventas día"] ||
-        dashboard["Ventas Día"] ||
-        dashboard["Ventas dia"] ||
-        dashboard["Ventas Dia"]
-      ),
-
-      meta_dia: numero(
-        dashboard["Meta día"] ||
-        dashboard["Meta Día"] ||
-        dashboard["Meta dia"] ||
-        dashboard["Meta Dia"]
-      ),
-
-      ventas_mtd: numero(
-        dashboard["Ventas MTD"] ||
-        dashboard["MTD"]
-      ),
-
-      meta_mes: numero(
-        dashboard["Meta mes"] ||
-        dashboard["Meta Mes"] ||
-        dashboard["Meta mensual"]
-      ),
-
-      fcst: numero(
-        dashboard["FCST"] ||
-        dashboard["FCST manual"] ||
-        dashboard["FCST Manual"] ||
-        dashboard["Forecast"]
-      )
-    },
-
-    equipo:(data.equipo || []).map(e => ({
-      nombre: e["Ejecutivo"] || "",
-      ventas_dia: numero(
-        e["Ventas Día"] ||
-        e["Ventas Dia"] ||
-        e["Ventas día"] ||
-        e["Hoy"]
-      ),
-      mtd: numero(
-        e["Ventas MTD"] ||
-        e["MTD"]
-      ),
-      meta: numero(
-        e["Meta Mes"] ||
-        e["Meta mes"] ||
-        e["Meta"]
-      ),
-      observacion:
-        e["Observación"] ||
-        e["Observacion"] ||
-        ""
-    })).filter(e => e.nombre),
+    dashboard: dashboardFinal,
+    equipo: equipo,
 
     avisos:(data.avisos || []).map(a => ({
-      titulo: a["Título"] || a["Titulo"] || "",
-      descripcion: a["Descripción"] || a["Descripcion"] || ""
-    })),
+      titulo: obtener(a, ["Título","Titulo"]),
+      descripcion: obtener(a, ["Descripción","Descripcion"])
+    })).filter(a => a.titulo || a.descripcion),
 
     biblioteca:(data.biblioteca || []).map(b => ({
-      titulo: b["Título"] || b["Titulo"] || "",
-      descripcion: b["Descripción"] || b["Descripcion"] || "",
-      url: b["Link"] || b["URL"] || "#"
-    })),
+      titulo: obtener(b, ["Título","Titulo","Nombre"]),
+      descripcion: obtener(b, ["Descripción","Descripcion","Categoría","Categoria"]),
+      url: obtener(b, ["Link","URL"]) || "#"
+    })).filter(b => b.titulo || b.descripcion),
 
     publicidad:(data.publicidad || []).map(p => ({
-      titulo: p["Título"] || p["Titulo"] || "",
-      descripcion: p["Descripción"] || p["Descripcion"] || "",
-      url: p["Link"] || p["URL"] || "#"
-    })),
+      titulo: obtener(p, ["Título","Titulo","Nombre"]),
+      descripcion: obtener(p, ["Descripción","Descripcion"]),
+      url: obtener(p, ["Link","URL"]) || "#"
+    })).filter(p => p.titulo || p.descripcion),
 
     links:(data.links || []).map(l => ({
-      nombre: l["Nombre"] || "",
-      categoria: l["Categoría"] || l["Categoria"] || "",
-      url: l["URL"] || l["Link"] || "#"
-    })),
+      nombre: obtener(l, ["Nombre"]),
+      categoria: obtener(l, ["Categoría","Categoria"]),
+      url: obtener(l, ["URL","Link"]) || "#"
+    })).filter(l => l.nombre),
 
     rutas:(data.rutas || []).map(r => ({
-      dia: r["Día"] || r["Dia"] || r["Fecha"] || "",
-      sector: r["Sector"] || "",
-      responsable: r["Responsable"] || ""
-    })),
+      dia: obtener(r, ["Día","Dia","Fecha"]),
+      sector: obtener(r, ["Sector"]),
+      responsable: obtener(r, ["Responsable"])
+    })).filter(r => r.dia || r.sector),
 
     reembolsos:(data.reembolsos || []).map(r => ({
-      ejecutivo: r["Ejecutivo"] || "",
-      monto: r["Monto"] || "",
-      estado: r["Estado"] || ""
-    }))
+      ejecutivo: obtener(r, ["Ejecutivo"]),
+      monto: obtener(r, ["Monto"]),
+      estado: obtener(r, ["Estado"])
+    })).filter(r => r.ejecutivo || r.monto)
   };
 }
 
 function mostrar(id){
-  document.querySelectorAll(".section").forEach(s => {
-    s.classList.remove("active");
-  });
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
 
   const seccion = document.getElementById(id);
 
@@ -242,8 +256,7 @@ function renderTodo(){
 function renderHeader(){
   const el = document.getElementById("ultimaActualizacion");
   if(el){
-    el.textContent =
-      "Actualizado: " + (datos.ultima_actualizacion || fechaCorta());
+    el.textContent = "Actualizado: " + formatoFecha(datos.ultima_actualizacion);
   }
 }
 
@@ -365,6 +378,7 @@ function renderLinks(){
 
 function renderPrivado(){
   const liderEquipo = document.getElementById("liderEquipo");
+
   if(liderEquipo){
     liderEquipo.innerHTML = datos.equipo.map(e => `
       <div class="person">
