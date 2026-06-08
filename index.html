@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WOM Street Chiloé</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
 
@@ -20,7 +20,7 @@
 <header class="header">
   <div>
     <h1>WOM <span>Street Chiloé</span></h1>
-    <p>Panel comercial y operativo</p>
+    <p>Centro de Operaciones Comerciales</p>
   </div>
 
   <div class="header-actions">
@@ -30,35 +30,102 @@
 </header>
 
 <nav class="nav">
-  <button onclick="mostrar('inicio')">Inicio</button>
-  <button onclick="mostrar('biblioteca')">Biblioteca</button>
-  <button onclick="mostrar('publicidad')">Publicidad</button>
-  <button onclick="mostrar('links')">Links</button>
-  <button onclick="mostrar('lider')">Líder</button>
+  <button onclick="mostrar('inicio')">🏠 Inicio</button>
+  <button onclick="mostrar('biblioteca')">📚 Biblioteca</button>
+  <button onclick="mostrar('publicidad')">📢 Publicidad</button>
+  <button onclick="mostrar('links')">🔗 Links</button>
+  <button onclick="mostrar('lider')">🖥️ Líder</button>
 </nav>
 
 <main>
 
 <section id="inicio" class="section active">
-  <div class="hero">
-    <h2>¡Vamos por más!</h2>
-    <p>Seguimiento diario del avance comercial WOM Street Chiloé.</p>
+
+  <div class="alerta-geovictoria">
+    🔔 No olvides marcar <strong>Geovictoria</strong>
   </div>
 
-  <h3>Gestión diaria</h3>
-  <div class="grid" id="kpisDia"></div>
+  <section class="dashboard-v2">
 
-  <h3>Avance del mes</h3>
-  <div class="grid" id="kpisMes"></div>
+    <div class="card principal-card">
+      <div class="card-head">
+        <h3>📱 Ventas del día</h3>
+        <span id="estadoDiaBadge">Cargando...</span>
+      </div>
 
-  <h3>Proyección de cierre</h3>
-  <div class="grid" id="kpisForecast"></div>
+      <div class="ventas-main">
+        <div>
+          <div class="numero-grande" id="ventasDiaPrincipal">0 / 0</div>
+          <p id="textoMetaDia">Meta diaria</p>
+        </div>
 
-  <h3>Estado del equipo</h3>
-  <div id="equipoCards" class="team-list"></div>
+        <div class="circle-mini">
+          <strong id="cumplimientoDiaPrincipal">0%</strong>
+          <span>Cump.</span>
+        </div>
+      </div>
+
+      <div class="progress">
+        <span id="barraDiaPrincipal" style="width:0%"></span>
+      </div>
+
+      <p class="mensaje-meta" id="mensajeMetaDia">Calculando avance...</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>👥 ¿Quién vendió hoy?</h3>
+      </div>
+
+      <div id="ventasHoyLista" class="ventas-hoy-lista"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>📊 Avance mensual</h3>
+      </div>
+
+      <div class="numero-mediano" id="avanceMensualPrincipal">0 / 0</div>
+      <p><strong id="cumplimientoMesPrincipal">0%</strong> Cumplimiento mensual</p>
+
+      <div class="progress">
+        <span id="barraMesPrincipal" style="width:0%"></span>
+      </div>
+    </div>
+
+    <div class="card fcst-card">
+      <div class="card-head">
+        <h3>📈 FCST</h3>
+      </div>
+
+      <div class="numero-mediano" id="fcstPrincipal">0</div>
+      <p id="diferenciaFcstPrincipal">0 vs Meta</p>
+    </div>
+
+    <div class="card equipo-card">
+      <div class="card-head">
+        <h3>👤 Equipo comercial</h3>
+      </div>
+
+      <div id="equipoCards" class="equipo-compacto"></div>
+    </div>
+
+    <div class="card compartir-card">
+      <div class="card-head">
+        <h3>↗ Reportes WhatsApp</h3>
+      </div>
+
+      <div class="share-mini">
+        <button onclick="generarImagenAvanceDia()">Compartir Día</button>
+        <button onclick="generarImagenAvanceMensual()">Compartir Mes</button>
+      </div>
+    </div>
+
+  </section>
 
   <h3>Avisos importantes</h3>
   <div class="grid" id="avisosLista"></div>
+
 </section>
 
 <section id="biblioteca" class="section">
@@ -77,6 +144,7 @@
 </section>
 
 <section id="lider" class="section">
+
   <div id="loginLider" class="card login">
     <h2>Acceso Líder</h2>
     <p>Ingresa el código para ver información privada.</p>
@@ -86,16 +154,41 @@
   </div>
 
   <div id="panelLider" class="private-panel hidden">
-    <h2>Panel Líder</h2>
+
+    <div class="leader-title">
+      <div>
+        <h2>🖥️ Centro de Control</h2>
+        <p>Gestión comercial WOM Street Chiloé</p>
+      </div>
+    </div>
 
     <div class="card report-panel">
-      <h3>Reportes para WhatsApp</h3>
-      <p class="note">Genera imágenes con avance grupal e individual.</p>
+      <h3>Reportería</h3>
+      <p class="note">Comparte imágenes profesionales con avance grupal e individual.</p>
 
       <div class="share-buttons">
-        <button onclick="generarImagenAvanceDia()">📤 Generar Avance del Día</button>
-        <button onclick="generarImagenAvanceMensual()">📈 Generar Avance del Mes</button>
+        <button onclick="generarImagenAvanceDia()">📤 Compartir Avance del Día</button>
+        <button onclick="generarImagenAvanceMensual()">📈 Compartir Avance del Mes</button>
       </div>
+    </div>
+
+    <div class="card">
+      <h3>📝 Registrar venta diaria</h3>
+
+      <label>Fecha</label>
+      <input id="ventaFecha" type="date">
+
+      <label>Ejecutivo</label>
+      <select id="ventaEjecutivo"></select>
+
+      <label>Cantidad</label>
+      <input id="ventaCantidad" type="number" min="1" value="1">
+
+      <label>Observación</label>
+      <input id="ventaObservacion" type="text" placeholder="Ej: Ruta Pudeto, Ancud Centro, etc.">
+
+      <button onclick="registrarVenta()">💾 Guardar venta</button>
+      <p class="note" id="ventaEstado"></p>
     </div>
 
     <h3>Ventas individuales</h3>
@@ -106,6 +199,7 @@
 
     <h3>Reembolsos</h3>
     <div class="grid" id="reembolsosLista"></div>
+
   </div>
 </section>
 
@@ -114,6 +208,6 @@
 <div id="shareArea"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js"></script>
+<script src="script.js?v=3"></script>
 </body>
 </html>
