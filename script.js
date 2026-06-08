@@ -528,9 +528,9 @@ function generarHTMLReporte(){
       font-family:Arial, Helvetica, sans-serif;
       box-sizing:border-box;
       width:1080px;
-      height:1350px;
+      height:1750px;
       background:linear-gradient(135deg,#25006d 0%,#35108f 45%,#681df2 78%,#ff2f93 100%);
-      padding:34px;
+      padding:40px;
       position:fixed;
       left:-9999px;
       top:0;
