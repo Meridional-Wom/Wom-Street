@@ -151,8 +151,7 @@ function transformarDatos(data){
     meta_dia: numero(obtener(dashboard, ["Meta día","Meta Día","Meta dia","Meta Dia"])),
     ventas_mtd: numero(obtener(dashboard, ["Ventas MTD","MTD","Ventas acumuladas","TOTAL"])),
     meta_mes: META_GRUPAL,
-    deberian_llevar: numero(obtener(dashboard, ["Deberían llevar","Deberian llevar","DEBERIAN LLEVAR"])),
-    fcst: numero(obtener(dashboard, ["FCST","FCST manual","FCST Manual","Forecast","FCST auto"]))
+    deberian_llevar: numero(obtener(dashboard, ["Deberían llevar","Deberian llevar","DEBERIAN LLEVAR"]))
   };
 
   if(dashboardFinal.ventas_dia === 0 && ventasDiaEquipo > 0){
@@ -169,10 +168,6 @@ function transformarDatos(data){
 
   if(dashboardFinal.deberian_llevar === 0){
     dashboardFinal.deberian_llevar = 66;
-  }
-
-  if(dashboardFinal.fcst === 0){
-    dashboardFinal.fcst = Math.round(dashboardFinal.ventas_mtd * 2);
   }
 
   return {
@@ -250,7 +245,6 @@ function calcular(){
   const d = datos.dashboard;
 
   d.cumplimiento_dia = porcentaje(d.ventas_dia, d.meta_dia);
-
   d.avance_meta = porcentajeDecimal(d.ventas_mtd, d.meta_mes);
   d.proyeccion_lineal = porcentajeDecimal(d.ventas_mtd, d.deberian_llevar);
   d.gap = d.ventas_mtd - d.deberian_llevar;
@@ -262,14 +256,14 @@ function calcular(){
     e.meta = META_EJECUTIVO;
     e.avance_meta = porcentajeDecimal(e.mtd, META_EJECUTIVO);
     e.proyeccion_lineal = porcentajeDecimal(e.mtd, deberianIndividual);
-    e.gap = e.mtd - deberianIndividual;
+    e.gap = Number((e.mtd - deberianIndividual).toFixed(1));
   });
 }
 
 function renderTodo(){
   calcular();
   renderHeader();
-  renderKpis();
+  renderKpisDia();
   renderTeamChiloe();
   renderAvisos();
   renderPublicidad();
@@ -299,12 +293,9 @@ function kpi(titulo, valor, subtitulo, progreso){
   `;
 }
 
-function renderKpis(){
+function renderKpisDia(){
   const d = datos.dashboard;
-
   const kpisDia = document.getElementById("kpisDia");
-  const kpisMes = document.getElementById("kpisMes");
-  const kpisForecast = document.getElementById("kpisForecast");
 
   if(kpisDia){
     kpisDia.innerHTML = `
@@ -313,22 +304,17 @@ function renderKpis(){
       ${kpi("Cumplimiento diario", d.cumplimiento_dia + "%", estado(d.cumplimiento_dia), d.cumplimiento_dia)}
     `;
   }
+}
 
-  if(kpisMes){
-    kpisMes.innerHTML = `
-      ${kpi("Total actual PP", d.ventas_mtd, "Avance del equipo")}
-      ${kpi("Meta grupal", d.meta_mes, "Meta mensual Team Chiloé")}
-      ${kpi("% avance meta", d.avance_meta + "%", "PP actual vs meta grupal", d.avance_meta)}
-      ${kpi("Deberían llevar", d.deberian_llevar, "Según avance lineal")}
-      ${kpi("% proyección lineal", d.proyeccion_lineal + "%", estado(d.proyeccion_lineal), d.proyeccion_lineal)}
-      ${kpi("GAP", d.gap, "Contra deberían llevar")}
-    `;
-  }
-
-  if(kpisForecast){
-    kpisForecast.innerHTML = "";
-    kpisForecast.style.display = "none";
-  }
+function barraHTML(valor){
+  return `
+    <div class="lineal-wrap">
+      <div class="lineal-bar">
+        <span class="${color(valor)}" style="width:${Math.min(valor,100)}%"></span>
+      </div>
+      <strong>${valor}%</strong>
+    </div>
+  `;
 }
 
 function renderTeamChiloe(){
@@ -340,33 +326,26 @@ function renderTeamChiloe(){
   contenedor.innerHTML = `
     <div class="team-table-card">
 
-      <div class="team-section-title">Resumen Team Chiloé</div>
+      <div class="team-section-title">Resumen mensual Team Chiloé</div>
 
       <div class="team-table-header team-main-header">
-        <div>EQUIPO</div>
-        <div>PP ACTUAL</div>
-        <div>META GRUPAL</div>
-        <div>% AVANCE</div>
-        <div>DEBERÍAN LLEVAR</div>
+        <div>Equipo</div>
+        <div>PP actual</div>
+        <div>Meta grupal</div>
+        <div>% avance vs meta</div>
+        <div>Deberían llevar</div>
         <div>GAP</div>
-        <div>ESTADO</div>
+        <div>Estado</div>
       </div>
 
       <div class="team-table-row team-main-row">
         <div><strong>TEAM CHILOÉ</strong></div>
-        <div>${d.ventas_mtd}</div>
-        <div>${d.meta_mes}</div>
-        <div>
-          <div class="lineal-wrap">
-            <div class="lineal-bar">
-              <span class="${color(d.avance_meta)}" style="width:${Math.min(d.avance_meta,100)}%"></span>
-            </div>
-            <strong>${d.avance_meta}%</strong>
-          </div>
-        </div>
-        <div>${d.deberian_llevar}<br><small>${d.proyeccion_lineal}%</small></div>
-        <div><strong class="${d.gap < 0 ? "negativo" : "positivo"}">${d.gap}</strong></div>
-        <div><span class="badge ${color(d.proyeccion_lineal)}">${estado(d.proyeccion_lineal)}</span></div>
+        <div data-label="PP actual">${d.ventas_mtd}</div>
+        <div data-label="Meta grupal">${d.meta_mes}</div>
+        <div data-label="% avance vs meta">${barraHTML(d.avance_meta)}</div>
+        <div data-label="Deberían llevar">${d.deberian_llevar}<br><small>Lineal: ${d.proyeccion_lineal}%</small></div>
+        <div data-label="GAP"><strong class="${d.gap < 0 ? "negativo" : "positivo"}">${d.gap}</strong></div>
+        <div data-label="Estado"><span class="badge ${color(d.proyeccion_lineal)}">${estado(d.proyeccion_lineal)}</span></div>
       </div>
 
       <div class="team-section-title">Desempeño individual</div>
@@ -383,25 +362,11 @@ function renderTeamChiloe(){
       ${datos.equipo.map(e => `
         <div class="team-table-row individual-row">
           <div>${e.nombre}</div>
-          <div>${e.mtd}</div>
-          <div>${e.meta}</div>
-          <div>
-            <div class="lineal-wrap">
-              <div class="lineal-bar">
-                <span class="${color(e.avance_meta)}" style="width:${Math.min(e.avance_meta,100)}%"></span>
-              </div>
-              <strong>${e.avance_meta}%</strong>
-            </div>
-          </div>
-          <div>
-            <div class="lineal-wrap">
-              <div class="lineal-bar">
-                <span class="${color(e.proyeccion_lineal)}" style="width:${Math.min(e.proyeccion_lineal,100)}%"></span>
-              </div>
-              <strong>${e.proyeccion_lineal}%</strong>
-            </div>
-          </div>
-          <div><span class="badge ${color(e.proyeccion_lineal)}">${estado(e.proyeccion_lineal)}</span></div>
+          <div data-label="PP actual">${e.mtd}</div>
+          <div data-label="Meta individual">${e.meta}</div>
+          <div data-label="% avance vs meta">${barraHTML(e.avance_meta)}</div>
+          <div data-label="% proyección lineal">${barraHTML(e.proyeccion_lineal)}</div>
+          <div data-label="Estado"><span class="badge ${color(e.proyeccion_lineal)}">${estado(e.proyeccion_lineal)}</span></div>
         </div>
       `).join("")}
 
@@ -522,8 +487,70 @@ function fechaCorta(){
   return `${fechaReporte()} · ${horaReporte()} hrs`;
 }
 
-function primerNombre(nombre){
-  return String(nombre || "").trim().split(" ")[0] || "";
+function generarHTMLReporte(){
+  const d = datos.dashboard;
+
+  return `
+    <div id="cardReporte" class="report-card">
+      <div class="report-shell">
+        <div class="report-head">
+          <div>
+            <h1>WOM Street Chiloé</h1>
+            <p>Reporte comercial diario y mensual</p>
+          </div>
+          <div>
+            <p>${fechaReporte()}</p>
+            <p>${horaReporte()} hrs</p>
+          </div>
+        </div>
+
+        <div class="report-body">
+          <div class="report-title">Avance del día</div>
+          <div class="report-grid">
+            <div class="report-kpi"><span>Ventas día</span><strong>${d.ventas_dia}</strong></div>
+            <div class="report-kpi"><span>Meta diaria</span><strong>${d.meta_dia}</strong></div>
+            <div class="report-kpi"><span>Cumplimiento</span><strong>${d.cumplimiento_dia}%</strong></div>
+          </div>
+
+          <div class="report-title">Avance mensual Team Chiloé</div>
+          <div class="report-grid">
+            <div class="report-kpi"><span>Total PP</span><strong>${d.ventas_mtd}</strong></div>
+            <div class="report-kpi"><span>Meta grupal</span><strong>${d.meta_mes}</strong></div>
+            <div class="report-kpi"><span>% avance meta</span><strong>${d.avance_meta}%</strong></div>
+            <div class="report-kpi"><span>Deberían llevar</span><strong>${d.deberian_llevar}</strong></div>
+            <div class="report-kpi"><span>Lineal</span><strong>${d.proyeccion_lineal}%</strong></div>
+            <div class="report-kpi"><span>GAP</span><strong>${d.gap}</strong></div>
+          </div>
+
+          <div class="report-title">Detalle individual</div>
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Ejecutivo</th>
+                <th>PP</th>
+                <th>Meta</th>
+                <th>% avance</th>
+                <th>% lineal</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${datos.equipo.map(e => `
+                <tr>
+                  <td>${e.nombre}</td>
+                  <td>${e.mtd}</td>
+                  <td>${e.meta}</td>
+                  <td>${e.avance_meta}%</td>
+                  <td>${e.proyeccion_lineal}%</td>
+                  <td>${estado(e.proyeccion_lineal)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 async function descargarImagen(id, nombreArchivo){
@@ -554,12 +581,7 @@ async function descargarImagen(id, nombreArchivo){
 
 async function generarImagenReporte(){
   const area = document.getElementById("shareArea");
-  area.innerHTML = document.getElementById("inicio").innerHTML;
-
-  const card = area.querySelector(".hero");
-  if(card) card.remove();
-
-  area.firstElementChild.id = "cardReporte";
+  area.innerHTML = generarHTMLReporte();
   await descargarImagen("cardReporte","reporte-comercial-wom-street.png");
   area.innerHTML = "";
 }
