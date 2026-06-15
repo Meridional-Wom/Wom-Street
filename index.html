@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WOM Street Chiloé</title>
-  <link rel="stylesheet" href="styles.css?v=120" />
+  <link rel="stylesheet" href="styles.css?v=200" />
 </head>
 <body>
 
@@ -38,6 +38,7 @@
 <header class="header">
   <div class="brand-row">
     <button class="menu-icon" onclick="toggleSidebar()">☰</button>
+
     <div>
       <h1>WOM STREET CHILOÉ</h1>
       <p>Dashboard Comercial</p>
@@ -65,7 +66,10 @@
       <h2>TEAM CHILOÉ</h2>
       <p>Seguimiento diario, avance mensual y desempeño individual.</p>
     </div>
-    <button onclick="generarImagenReporte()" class="share-report-btn">📤 Compartir reporte</button>
+
+    <button onclick="generarImagenReporte()" class="share-report-btn">
+      📤 Compartir reporte
+    </button>
   </div>
 
   <div class="block">
@@ -96,8 +100,11 @@
 </section>
 
 <section id="recursos" class="section">
-  <h2>Recursos</h2>
-  <p class="section-sub">Links, imágenes, formularios, reportes y material comercial.</p>
+  <div class="page-title">
+    <h2>Recursos</h2>
+    <p>Links, imágenes, formularios, reportes y material comercial.</p>
+  </div>
+
   <div class="resources-grid" id="recursosLista"></div>
 </section>
 
@@ -105,8 +112,10 @@
   <div id="loginLider" class="card login">
     <h2>Acceso Líder</h2>
     <p>Ingresa el código para ver información privada.</p>
-    <input type="password" id="codigo" placeholder="Código de acceso">
+
+    <input type="password" id="codigo" placeholder="Código de acceso" />
     <button onclick="validarCodigo()">Ingresar</button>
+
     <p id="error"></p>
   </div>
 
@@ -133,12 +142,12 @@
 </main>
 
 <footer class="footer">
-  <span>WOM STREET CHILOÉ</span>
+  WOM STREET CHILOÉ
 </footer>
 
 <div id="shareArea"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=120"></script>
+<script src="script.js?v=200"></script>
 </body>
 </html>
