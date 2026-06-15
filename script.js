@@ -132,6 +132,13 @@ function formatoFecha(valor){
   return valor;
 }
 
+function iniciales(nombre){
+  const partes = String(nombre || "").trim().split(" ").filter(Boolean);
+  if(partes.length === 0) return "W";
+  if(partes.length === 1) return partes[0].charAt(0).toUpperCase();
+  return (partes[0].charAt(0) + partes[1].charAt(0)).toUpperCase();
+}
+
 function transformarDatos(data){
   const dashboard = data.dashboard || {};
 
@@ -186,14 +193,6 @@ function transformarDatos(data){
       descripcion: obtener(a, ["Descripción","Descripcion"])
     })).filter(a => a.titulo || a.descripcion),
 
-    publicidad:(data.publicidad || []).map(p => ({
-      titulo: obtener(p, ["Título","Titulo","Nombre"]),
-      descripcion: obtener(p, ["Descripción","Descripcion"]),
-      url: obtener(p, ["Link","URL"]) || "#",
-      imagen: obtener(p, ["Imagen","imagen"]) || "",
-      activo: obtener(p, ["Activo","activo"]) || "SI"
-    })).filter(p => p.titulo || p.descripcion),
-
     links:(data.links || []).map(l => ({
       nombre: obtener(l, ["Nombre"]),
       categoria: obtener(l, ["Categoría","Categoria"]),
@@ -244,9 +243,9 @@ function validarCodigo(){
 function calcular(){
   const d = datos.dashboard;
 
-  d.cumplimiento_dia = porcentaje(d.ventas_dia, d.meta_dia);
+  d.gap_dia = d.ventas_dia - d.meta_dia;
   d.avance_meta = porcentajeDecimal(d.ventas_mtd, d.meta_mes);
-  d.proyeccion_lineal = porcentajeDecimal(d.ventas_mtd, d.deberian_llevar);
+  d.proyeccion = porcentajeDecimal(d.ventas_mtd, d.deberian_llevar);
   d.gap = d.ventas_mtd - d.deberian_llevar;
 
   const cantidad = datos.equipo.length || 1;
@@ -255,8 +254,9 @@ function calcular(){
   datos.equipo.forEach(e => {
     e.meta = META_EJECUTIVO;
     e.avance_meta = porcentajeDecimal(e.mtd, META_EJECUTIVO);
-    e.proyeccion_lineal = porcentajeDecimal(e.mtd, deberianIndividual);
+    e.proyeccion = porcentajeDecimal(e.mtd, deberianIndividual);
     e.gap = Number((e.mtd - deberianIndividual).toFixed(1));
+    e.estado_dia = e.ventas_dia > 0 ? "Con venta" : "Sin venta";
   });
 }
 
@@ -264,9 +264,10 @@ function renderTodo(){
   calcular();
   renderHeader();
   renderKpisDia();
+  renderAvanceDiarioIndividual();
   renderTeamChiloe();
+  renderDesempenoMensual();
   renderAvisos();
-  renderPublicidad();
   renderLinks();
   renderPrivado();
 }
@@ -278,17 +279,12 @@ function renderHeader(){
   }
 }
 
-function kpi(titulo, valor, subtitulo, progreso){
-  const barra = progreso !== undefined
-    ? `<div class="progress"><span style="width:${Math.min(Math.max(progreso,0),100)}%"></span></div>`
-    : "";
-
+function kpi(titulo, valor, subtitulo){
   return `
     <div class="card">
       <div class="kpi-title">${titulo}</div>
       <div class="kpi-value">${valor}</div>
       <p class="kpi-sub">${subtitulo || ""}</p>
-      ${barra}
     </div>
   `;
 }
@@ -301,18 +297,52 @@ function renderKpisDia(){
     kpisDia.innerHTML = `
       ${kpi("Ventas del día", d.ventas_dia, "Gestión diaria")}
       ${kpi("Meta diaria", d.meta_dia, "Objetivo del día")}
-      ${kpi("Cumplimiento diario", d.cumplimiento_dia + "%", estado(d.cumplimiento_dia), d.cumplimiento_dia)}
+      ${kpi("GAP del día", d.gap_dia, "Contra meta diaria")}
     `;
   }
 }
 
 function barraHTML(valor){
   return `
-    <div class="lineal-wrap">
-      <div class="lineal-bar">
+    <div class="progress-wrap">
+      <div class="progress-bar">
         <span class="${color(valor)}" style="width:${Math.min(valor,100)}%"></span>
       </div>
       <strong>${valor}%</strong>
+    </div>
+  `;
+}
+
+function personaHTML(nombre){
+  return `
+    <div class="person-cell">
+      <div class="avatar">${iniciales(nombre)}</div>
+      <span>${nombre}</span>
+    </div>
+  `;
+}
+
+function renderAvanceDiarioIndividual(){
+  const contenedor = document.getElementById("avanceDiarioIndividual");
+  if(!contenedor) return;
+
+  contenedor.innerHTML = `
+    <div class="table-card">
+      <div class="table-header daily-header">
+        <div>Ejecutivo</div>
+        <div>Venta hoy</div>
+        <div>Estado</div>
+      </div>
+
+      ${datos.equipo.map(e => `
+        <div class="table-row daily-row">
+          <div>${personaHTML(e.nombre)}</div>
+          <div data-label="Venta hoy">${e.ventas_dia}</div>
+          <div data-label="Estado">
+            <span class="badge ${e.ventas_dia > 0 ? "green" : "red"}">${e.estado_dia}</span>
+          </div>
+        </div>
+      `).join("")}
     </div>
   `;
 }
@@ -324,52 +354,57 @@ function renderTeamChiloe(){
   const d = datos.dashboard;
 
   contenedor.innerHTML = `
-    <div class="team-table-card">
-
-      <div class="team-section-title">Resumen mensual Team Chiloé</div>
-
-      <div class="team-table-header team-main-header">
+    <div class="table-card">
+      <div class="table-header team-main-header">
         <div>Equipo</div>
         <div>PP actual</div>
         <div>Meta grupal</div>
         <div>% avance vs meta</div>
         <div>Deberían llevar</div>
+        <div>Proyección</div>
+        <div>GAP</div>
+      </div>
+
+      <div class="table-row team-main-row">
+        <div><strong>TEAM CHILOÉ</strong><br><small>${d.ventas_mtd} / ${d.meta_mes}</small></div>
+        <div data-label="PP actual">${d.ventas_mtd}</div>
+        <div data-label="Meta grupal">${d.meta_mes}</div>
+        <div data-label="% avance vs meta">${barraHTML(d.avance_meta)}</div>
+        <div data-label="Deberían llevar">${d.deberian_llevar}</div>
+        <div data-label="Proyección">${barraHTML(d.proyeccion)}</div>
+        <div data-label="GAP"><strong class="${d.gap < 0 ? "negativo" : "positivo"}">${d.gap}</strong></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderDesempenoMensual(){
+  const contenedor = document.getElementById("desempenoMensual");
+  if(!contenedor) return;
+
+  contenedor.innerHTML = `
+    <div class="table-card">
+      <div class="table-header individual-header">
+        <div>Ejecutivo</div>
+        <div>PP actual</div>
+        <div>Meta</div>
+        <div>% avance</div>
+        <div>Proyección</div>
         <div>GAP</div>
         <div>Estado</div>
       </div>
 
-      <div class="team-table-row team-main-row">
-        <div><strong>TEAM CHILOÉ</strong></div>
-        <div data-label="PP actual">${d.ventas_mtd}</div>
-        <div data-label="Meta grupal">${d.meta_mes}</div>
-        <div data-label="% avance vs meta">${barraHTML(d.avance_meta)}</div>
-        <div data-label="Deberían llevar">${d.deberian_llevar}<br><small>Lineal: ${d.proyeccion_lineal}%</small></div>
-        <div data-label="GAP"><strong class="${d.gap < 0 ? "negativo" : "positivo"}">${d.gap}</strong></div>
-        <div data-label="Estado"><span class="badge ${color(d.proyeccion_lineal)}">${estado(d.proyeccion_lineal)}</span></div>
-      </div>
-
-      <div class="team-section-title">Desempeño individual</div>
-
-      <div class="team-table-header individual-header">
-        <div>Ejecutivo</div>
-        <div>PP actual</div>
-        <div>Meta individual</div>
-        <div>% avance vs meta</div>
-        <div>% proyección lineal</div>
-        <div>Estado</div>
-      </div>
-
       ${datos.equipo.map(e => `
-        <div class="team-table-row individual-row">
-          <div>${e.nombre}</div>
+        <div class="table-row individual-row">
+          <div>${personaHTML(e.nombre)}</div>
           <div data-label="PP actual">${e.mtd}</div>
-          <div data-label="Meta individual">${e.meta}</div>
-          <div data-label="% avance vs meta">${barraHTML(e.avance_meta)}</div>
-          <div data-label="% proyección lineal">${barraHTML(e.proyeccion_lineal)}</div>
-          <div data-label="Estado"><span class="badge ${color(e.proyeccion_lineal)}">${estado(e.proyeccion_lineal)}</span></div>
+          <div data-label="Meta">${e.meta}</div>
+          <div data-label="% avance">${barraHTML(e.avance_meta)}</div>
+          <div data-label="Proyección">${barraHTML(e.proyeccion)}</div>
+          <div data-label="GAP"><strong class="${e.gap < 0 ? "negativo" : "positivo"}">${e.gap}</strong></div>
+          <div data-label="Estado"><span class="badge ${color(e.proyeccion)}">${estado(e.proyeccion)}</span></div>
         </div>
       `).join("")}
-
     </div>
   `;
 }
@@ -382,29 +417,6 @@ function renderAvisos(){
     <div class="card">
       <h3>${a.titulo}</h3>
       <p>${a.descripcion}</p>
-    </div>
-  `).join("");
-}
-
-function renderPublicidad(){
-  const contenedor = document.getElementById("publicidadLista");
-  if(!contenedor) return;
-
-  const campañas = datos.publicidad.filter(p => {
-    const activo = normalizar(p.activo);
-    return activo !== "no" && activo !== "false" && activo !== "0";
-  });
-
-  contenedor.innerHTML = campañas.map(p => `
-    <div class="campania-card">
-      ${p.imagen ? `<img src="${p.imagen}" alt="${p.titulo}" class="campania-img" loading="lazy" referrerpolicy="no-referrer">` : ""}
-      <div class="campania-body">
-        <h3>${p.titulo}</h3>
-        <p>${p.descripcion}</p>
-        <div class="campania-actions">
-          <a href="${p.url}" target="_blank" class="btn-campania">Ver material</a>
-        </div>
-      </div>
     </div>
   `).join("");
 }
@@ -430,14 +442,14 @@ function renderPrivado(){
       <div class="person">
         <div class="person-top">
           <div class="person-name">${e.nombre}</div>
-          <span class="badge ${color(e.proyeccion_lineal)}">${estado(e.proyeccion_lineal)}</span>
+          <span class="badge ${color(e.proyeccion)}">${estado(e.proyeccion)}</span>
         </div>
 
         <div class="person-grid">
           <div class="mini"><span>Hoy</span><strong>${e.ventas_dia}</strong></div>
           <div class="mini"><span>PP</span><strong>${e.mtd}</strong></div>
           <div class="mini"><span>Avance</span><strong>${e.avance_meta}%</strong></div>
-          <div class="mini"><span>Lineal</span><strong>${e.proyeccion_lineal}%</strong></div>
+          <div class="mini"><span>Proyección</span><strong>${e.proyeccion}%</strong></div>
         </div>
 
         <p>${e.observacion}</p>
@@ -505,24 +517,46 @@ function generarHTMLReporte(){
         </div>
 
         <div class="report-body">
-          <div class="report-title">Avance del día</div>
+          <div class="report-title">Gestión diaria</div>
           <div class="report-grid">
             <div class="report-kpi"><span>Ventas día</span><strong>${d.ventas_dia}</strong></div>
             <div class="report-kpi"><span>Meta diaria</span><strong>${d.meta_dia}</strong></div>
-            <div class="report-kpi"><span>Cumplimiento</span><strong>${d.cumplimiento_dia}%</strong></div>
+            <div class="report-kpi"><span>GAP día</span><strong>${d.gap_dia}</strong></div>
           </div>
+
+          <div class="report-title">Avance individual del día</div>
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Ejecutivo</th>
+                <th>Hoy</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${datos.equipo.map(e => `
+                <tr>
+                  <td>${e.nombre}</td>
+                  <td>${e.ventas_dia}</td>
+                  <td>${e.estado_dia}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+
+          <br>
 
           <div class="report-title">Avance mensual Team Chiloé</div>
           <div class="report-grid">
             <div class="report-kpi"><span>Total PP</span><strong>${d.ventas_mtd}</strong></div>
             <div class="report-kpi"><span>Meta grupal</span><strong>${d.meta_mes}</strong></div>
-            <div class="report-kpi"><span>% avance meta</span><strong>${d.avance_meta}%</strong></div>
+            <div class="report-kpi"><span>% avance</span><strong>${d.avance_meta}%</strong></div>
             <div class="report-kpi"><span>Deberían llevar</span><strong>${d.deberian_llevar}</strong></div>
-            <div class="report-kpi"><span>Lineal</span><strong>${d.proyeccion_lineal}%</strong></div>
+            <div class="report-kpi"><span>Proyección</span><strong>${d.proyeccion}%</strong></div>
             <div class="report-kpi"><span>GAP</span><strong>${d.gap}</strong></div>
           </div>
 
-          <div class="report-title">Detalle individual</div>
+          <div class="report-title">Detalle mensual individual</div>
           <table class="report-table">
             <thead>
               <tr>
@@ -530,7 +564,8 @@ function generarHTMLReporte(){
                 <th>PP</th>
                 <th>Meta</th>
                 <th>% avance</th>
-                <th>% lineal</th>
+                <th>Proyección</th>
+                <th>GAP</th>
                 <th>Estado</th>
               </tr>
             </thead>
@@ -541,8 +576,9 @@ function generarHTMLReporte(){
                   <td>${e.mtd}</td>
                   <td>${e.meta}</td>
                   <td>${e.avance_meta}%</td>
-                  <td>${e.proyeccion_lineal}%</td>
-                  <td>${estado(e.proyeccion_lineal)}</td>
+                  <td>${e.proyeccion}%</td>
+                  <td>${e.gap}</td>
+                  <td>${estado(e.proyeccion)}</td>
                 </tr>
               `).join("")}
             </tbody>
