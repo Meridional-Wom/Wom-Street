@@ -6,6 +6,22 @@ const META_GRUPAL = 131;
 
 let datos = {};
 
+function toggleSidebar(){
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("sidebarOverlay");
+
+  if(sidebar) sidebar.classList.toggle("active");
+  if(overlay) overlay.classList.toggle("active");
+}
+
+function cerrarSidebar(){
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("sidebarOverlay");
+
+  if(sidebar) sidebar.classList.remove("active");
+  if(overlay) overlay.classList.remove("active");
+}
+
 function ocultarLoader(){
   const loader = document.getElementById("loader");
   if(loader){
@@ -20,8 +36,10 @@ async function iniciar(){
   try{
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
+
     datos = transformarDatos(data);
     renderTodo();
+
   }catch(error){
     console.error("Error al cargar datos:", error);
     alert("No se pudieron cargar los datos desde Google Sheets.");
@@ -32,6 +50,7 @@ async function iniciar(){
 
 async function actualizarDatos(){
   const boton = document.querySelector(".refresh-btn");
+
   if(boton){
     boton.textContent = "⏳";
     boton.disabled = true;
@@ -40,8 +59,10 @@ async function actualizarDatos(){
   try{
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
+
     datos = transformarDatos(data);
     renderTodo();
+
   }catch(error){
     console.error("Error al actualizar datos:", error);
     alert("No se pudieron actualizar los datos.");
@@ -64,6 +85,7 @@ function normalizar(texto){
 
 function obtener(obj, nombres){
   if(!obj) return "";
+
   const claves = Object.keys(obj);
 
   for(const nombre of nombres){
@@ -80,16 +102,18 @@ function obtener(obj, nombres){
 
 function numero(valor){
   if(valor === "" || valor === null || valor === undefined) return 0;
+
   if(typeof valor === "string"){
     valor = valor.replace(",", ".").replace("%", "").trim();
   }
+
   const n = Number(valor);
   return isNaN(n) ? 0 : n;
 }
 
 function porcentajeDecimal(valor, meta){
   if(!meta || meta === 0) return 0;
-  return Number(((valor / meta) * 100).toFixed(2));
+  return Math.round((valor / meta) * 100);
 }
 
 function color(p){
@@ -106,6 +130,7 @@ function estado(p){
 
 function fechaSoloDia(){
   const fecha = new Date();
+
   return fecha.toLocaleDateString("es-CL",{
     day:"2-digit",
     month:"2-digit",
@@ -117,65 +142,73 @@ function formatoFecha(){
   return fechaSoloDia();
 }
 
-function iniciales(nombre){
-  const partes = String(nombre || "").trim().split(" ").filter(Boolean);
-  if(partes.length === 0) return "W";
-  if(partes.length === 1) return partes[0].charAt(0).toUpperCase();
-  return (partes[0].charAt(0) + partes[1].charAt(0)).toUpperCase();
-}
-
-function mismoEjecutivo(a,b){
-  const na = normalizar(a);
-  const nb = normalizar(b);
-  if(!na || !nb) return false;
-  return na === nb || na.includes(nb) || nb.includes(na);
-}
-
-function obtenerVentasDiaDesdeControl(data, equipo){
-  const control = data.control_diario || data.controldiario || data.diario || [];
-  const mapa = {};
-
-  control.forEach(r => {
-    const nombre = obtener(r, ["TEAM CHILOÉ","TEAM CHILOE","Ejecutivo","Usuario","Nombre"]);
-    const ventas = numero(obtener(r, ["Ventas Día","Ventas Dia","Ventas día","Hoy","PP","Cantidad","Ventas"]));
-    if(!nombre || ventas === 0) return;
-
-    const ejecutivo = equipo.find(e => mismoEjecutivo(e.nombre, nombre));
-    const key = ejecutivo ? ejecutivo.nombre : nombre;
-
-    mapa[key] = (mapa[key] || 0) + ventas;
-  });
-
-  return mapa;
-}
-
 function transformarDatos(data){
   const dashboard = data.dashboard || {};
 
   let equipo = (data.equipo || []).map(e => ({
-    nombre: obtener(e, ["TEAM CHILOÉ","TEAM CHILOE","Ejecutivo","Usuario","Nombre"]),
-    ventas_dia: numero(obtener(e, ["Ventas Día","Ventas Dia","Ventas día","Hoy"])),
-    mtd: numero(obtener(e, ["PP","Ventas MTD","MTD"])),
+    nombre: obtener(e, [
+      "TEAM CHILOÉ",
+      "TEAM CHILOE",
+      "Ejecutivo",
+      "Usuario",
+      "Nombre"
+    ]),
+
+    ventas_dia: numero(obtener(e, [
+      "Ventas MTD Día",
+      "Ventas MTD Dia",
+      "Ventas Día",
+      "Ventas Dia",
+      "Ventas día",
+      "Hoy"
+    ])),
+
+    mtd: numero(obtener(e, [
+      "Ventas MTD",
+      "MTD",
+      "PP"
+    ])),
+
     meta: META_EJECUTIVO,
-    observacion: obtener(e, ["Observación","Observacion"])
+
+    observacion: obtener(e, [
+      "Observación",
+      "Observacion"
+    ])
   })).filter(e => e.nombre);
-
-  const ventasPorControl = obtenerVentasDiaDesdeControl(data, equipo);
-
-  equipo = equipo.map(e => ({
-    ...e,
-    ventas_dia: ventasPorControl[e.nombre] !== undefined ? ventasPorControl[e.nombre] : e.ventas_dia
-  }));
 
   const ventasDiaEquipo = equipo.reduce((total, e) => total + e.ventas_dia, 0);
   const ventasMTDEquipo = equipo.reduce((total, e) => total + e.mtd, 0);
 
   const dashboardFinal = {
-    ventas_dia: numero(obtener(dashboard, ["Ventas día","Ventas Día","Ventas dia","Ventas Dia"])),
-    meta_dia: numero(obtener(dashboard, ["Meta día","Meta Día","Meta dia","Meta Dia"])),
-    ventas_mtd: numero(obtener(dashboard, ["Ventas MTD","MTD","Ventas acumuladas","TOTAL"])),
+    ventas_dia: numero(obtener(dashboard, [
+      "Ventas día",
+      "Ventas Día",
+      "Ventas dia",
+      "Ventas Dia"
+    ])),
+
+    meta_dia: numero(obtener(dashboard, [
+      "Meta día",
+      "Meta Día",
+      "Meta dia",
+      "Meta Dia"
+    ])),
+
+    ventas_mtd: numero(obtener(dashboard, [
+      "Ventas MTD",
+      "MTD",
+      "Ventas acumuladas",
+      "TOTAL"
+    ])),
+
     meta_mes: META_GRUPAL,
-    deberian_llevar: numero(obtener(dashboard, ["Deberían llevar","Deberian llevar","DEBERIAN LLEVAR"]))
+
+    deberian_llevar: numero(obtener(dashboard, [
+      "Deberían llevar",
+      "Deberian llevar",
+      "DEBERIAN LLEVAR"
+    ]))
   };
 
   if(dashboardFinal.ventas_dia === 0 && ventasDiaEquipo > 0){
@@ -201,7 +234,9 @@ function transformarDatos(data){
       "Actualización",
       "Fecha actualización"
     ]),
+
     dashboard: dashboardFinal,
+
     equipo: equipo,
 
     avisos:(data.avisos || []).map(a => ({
@@ -209,7 +244,7 @@ function transformarDatos(data){
       descripcion: obtener(a, ["Descripción","Descripcion"])
     })).filter(a => a.titulo || a.descripcion),
 
-    recursos:(data.links || data.recursos || []).map(l => ({
+    recursos:(data.recursos || data.links || []).map(l => ({
       nombre: obtener(l, ["Nombre","Título","Titulo"]),
       categoria: obtener(l, ["Categoría","Categoria","Tipo","Descripción","Descripcion"]),
       url: obtener(l, ["URL","Link"]) || "#"
@@ -230,17 +265,31 @@ function transformarDatos(data){
 }
 
 function mostrar(id){
-  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".section").forEach(s => {
+    s.classList.remove("active");
+  });
+
   const seccion = document.getElementById(id);
 
   if(seccion){
     seccion.classList.add("active");
-    window.scrollTo({top:0,behavior:"smooth"});
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
   }
 
-  document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".nav button").forEach(b => {
+    b.classList.remove("active");
+  });
+
   const boton = document.querySelector(`.nav button[onclick="mostrar('${id}')"]`);
-  if(boton) boton.classList.add("active");
+
+  if(boton){
+    boton.classList.add("active");
+  }
+
+  cerrarSidebar();
 }
 
 function validarCodigo(){
@@ -271,7 +320,7 @@ function calcular(){
     e.meta = META_EJECUTIVO;
     e.avance_meta = porcentajeDecimal(e.mtd, META_EJECUTIVO);
     e.proyeccion = porcentajeDecimal(e.mtd, deberianIndividual);
-    e.gap = Number((e.mtd - deberianIndividual).toFixed(1));
+    e.gap = Math.round(e.mtd - deberianIndividual);
     e.estado_dia = e.ventas_dia > 0 ? "Con venta" : "Sin venta";
   });
 
@@ -291,20 +340,30 @@ function renderTodo(){
 }
 
 function renderHeader(){
+  const fecha = formatoFecha();
+
   const el = document.getElementById("ultimaActualizacion");
+
   if(el){
-    el.textContent = "Actualizado: " + formatoFecha(datos.ultima_actualizacion);
+    el.textContent = "Actualizado: " + fecha;
+  }
+
+  const sidebarFecha = document.getElementById("sidebarFecha");
+
+  if(sidebarFecha){
+    sidebarFecha.textContent = fecha;
   }
 }
 
 function renderKpisDia(){
   const d = datos.dashboard;
   const kpisDia = document.getElementById("kpisDia");
+
   if(!kpisDia) return;
 
   kpisDia.innerHTML = `
     <div class="kpi-card">
-      <div class="kpi-icon kpi-purple">🛍️</div>
+      <div class="kpi-icon">🛍️</div>
       <div>
         <div class="kpi-title">Ventas Día</div>
         <div class="kpi-value">${d.ventas_dia}</div>
@@ -312,7 +371,7 @@ function renderKpisDia(){
     </div>
 
     <div class="kpi-card">
-      <div class="kpi-icon kpi-pink">🎯</div>
+      <div class="kpi-icon">🎯</div>
       <div>
         <div class="kpi-title">Meta Día</div>
         <div class="kpi-value">${d.meta_dia}</div>
@@ -320,7 +379,7 @@ function renderKpisDia(){
     </div>
 
     <div class="kpi-card">
-      <div class="kpi-icon kpi-yellow">📊</div>
+      <div class="kpi-icon">📊</div>
       <div>
         <div class="kpi-title">Diferencia</div>
         <div class="kpi-value ${d.gap_dia < 0 ? "negative" : ""}">${d.gap_dia}</div>
@@ -331,12 +390,14 @@ function renderKpisDia(){
 
 function renderAvanceDiarioIndividual(){
   const contenedor = document.getElementById("avanceDiarioIndividual");
+
   if(!contenedor) return;
 
   contenedor.innerHTML = datos.equipo.map(e => `
     <div class="daily-card">
-      <div class="avatar">${iniciales(e.nombre)}</div>
-      <div>
+      <div class="avatar-dot"></div>
+
+      <div class="daily-info">
         <h4>${e.nombre}</h4>
         <p>Ventas del día</p>
         <strong>${e.ventas_dia}</strong>
@@ -347,6 +408,7 @@ function renderAvanceDiarioIndividual(){
 
 function renderTeamChiloe(){
   const contenedor = document.getElementById("teamChiloe");
+
   if(!contenedor) return;
 
   const d = datos.dashboard;
@@ -354,25 +416,40 @@ function renderTeamChiloe(){
   contenedor.innerHTML = `
     <div class="summary-grid">
       <div class="summary-panel">
-        <div class="summary-row"><span>🎯 Meta Grupal</span><strong>${d.meta_mes}</strong></div>
-        <div class="summary-row"><span>🛍️ PP Actual</span><strong>${d.ventas_mtd}</strong></div>
-        <div class="summary-row"><span>📊 % Avance Meta</span><strong>${d.avance_meta}%</strong></div>
+        <div class="summary-row">
+          <span>🎯 Meta Grupal</span>
+          <strong>${d.meta_mes}</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>🛍️ PP Actual</span>
+          <strong>${d.ventas_mtd}</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>📊 % Avance Meta</span>
+          <strong>${d.avance_meta}%</strong>
+        </div>
       </div>
 
       <div class="summary-panel">
-        <div class="summary-row"><span>📋 Deberían Llevar</span><strong>${d.deberian_llevar}</strong></div>
-        <div class="summary-row"><span>📈 Proyección</span><strong>${d.proyeccion}%</strong></div>
-        <div class="summary-row"><span>↕ GAP</span><strong class="${d.gap < 0 ? "negative" : ""}">${d.gap}</strong></div>
+        <div class="summary-row">
+          <span>📋 Deberían Llevar</span>
+          <strong>${d.deberian_llevar}</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>📈 Proyección</span>
+          <strong>${d.proyeccion}%</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>↕ GAP</span>
+          <strong class="${d.gap < 0 ? "negative" : ""}">${d.gap}</strong>
+        </div>
       </div>
     </div>
   `;
-}
-
-function ranking(n){
-  if(n === 1) return "1";
-  if(n === 2) return "2";
-  if(n === 3) return "3";
-  return String(n);
 }
 
 function renderDesempenoMensual(){
@@ -385,25 +462,37 @@ function renderDesempenoMensual(){
 
   if(!contenedor) return;
 
-  contenedor.innerHTML = datos.equipo.map((e, index) => {
+  contenedor.innerHTML = datos.equipo.map(e => {
     const estadoColor = color(e.proyeccion);
 
     return `
-      <div class="executive-card ${estadoColor}-border">
+      <div class="executive-card">
         <div class="executive-top">
           <div class="executive-title">
-            <div class="rank">${ranking(index + 1)}</div>
-            <div>
-              <h4>${e.nombre}</h4>
-              <span class="badge ${estadoColor}">${estado(e.proyeccion)}</span>
-            </div>
+            <h4>${e.nombre}</h4>
+            <span class="badge ${estadoColor}">${estado(e.proyeccion)}</span>
           </div>
         </div>
 
-        <div class="metric-row"><span>Meta Individual</span><strong>${e.meta}</strong></div>
-        <div class="metric-row"><span>PP Actual</span><strong>${e.mtd}</strong></div>
-        <div class="metric-row"><span>% Avance Meta</span><strong>${e.avance_meta}%</strong></div>
-        <div class="metric-row"><span>Proyección</span><strong>${e.proyeccion}%</strong></div>
+        <div class="metric-row">
+          <span>Meta Individual</span>
+          <strong>${e.meta}</strong>
+        </div>
+
+        <div class="metric-row">
+          <span>PP Actual</span>
+          <strong>${e.mtd}</strong>
+        </div>
+
+        <div class="metric-row">
+          <span>% Avance Meta</span>
+          <strong>${e.avance_meta}%</strong>
+        </div>
+
+        <div class="metric-row">
+          <span>Proyección</span>
+          <strong>${e.proyeccion}%</strong>
+        </div>
       </div>
     `;
   }).join("");
@@ -411,6 +500,7 @@ function renderDesempenoMensual(){
 
 function renderAvisos(){
   const contenedor = document.getElementById("avisosLista");
+
   if(!contenedor) return;
 
   contenedor.innerHTML = datos.avisos.map(a => `
@@ -423,27 +513,32 @@ function renderAvisos(){
 
 function iconoRecurso(categoria){
   const c = normalizar(categoria);
+
   if(c.includes("pdf") || c.includes("documento")) return "📄";
-  if(c.includes("imagen") || c.includes("campaña")) return "🖼️";
-  if(c.includes("video") || c.includes("capacitacion")) return "▶️";
+  if(c.includes("imagen") || c.includes("campaña") || c.includes("campana")) return "🖼️";
+  if(c.includes("video") || c.includes("capacitacion") || c.includes("capacitación")) return "▶️";
   if(c.includes("formulario")) return "📋";
   if(c.includes("reporte")) return "📊";
+
   return "🔗";
 }
 
 function renderRecursos(){
   const contenedor = document.getElementById("recursosLista");
+
   if(!contenedor) return;
 
   contenedor.innerHTML = datos.recursos.map(r => `
     <a class="resource-card" href="${r.url}" target="_blank">
       <div class="resource-left">
         <div class="resource-icon">${iconoRecurso(r.categoria)}</div>
+
         <div>
           <h3>${r.nombre}</h3>
           <p>${r.categoria || "Abrir recurso"}</p>
         </div>
       </div>
+
       <div class="resource-arrow">›</div>
     </a>
   `).join("");
@@ -461,10 +556,25 @@ function renderPrivado(){
         </div>
 
         <div class="person-grid">
-          <div class="mini"><span>Hoy</span><strong>${e.ventas_dia}</strong></div>
-          <div class="mini"><span>PP</span><strong>${e.mtd}</strong></div>
-          <div class="mini"><span>Avance</span><strong>${e.avance_meta}%</strong></div>
-          <div class="mini"><span>Proyección</span><strong>${e.proyeccion}%</strong></div>
+          <div class="mini">
+            <span>Hoy</span>
+            <strong>${e.ventas_dia}</strong>
+          </div>
+
+          <div class="mini">
+            <span>PP</span>
+            <strong>${e.mtd}</strong>
+          </div>
+
+          <div class="mini">
+            <span>Avance</span>
+            <strong>${e.avance_meta}%</strong>
+          </div>
+
+          <div class="mini">
+            <span>Proyección</span>
+            <strong>${e.proyeccion}%</strong>
+          </div>
         </div>
 
         <p>${e.observacion || ""}</p>
@@ -473,6 +583,7 @@ function renderPrivado(){
   }
 
   const rutasLista = document.getElementById("rutasLista");
+
   if(rutasLista){
     rutasLista.innerHTML = datos.rutas.map(r => `
       <div class="card">
@@ -484,6 +595,7 @@ function renderPrivado(){
   }
 
   const reembolsosLista = document.getElementById("reembolsosLista");
+
   if(reembolsosLista){
     reembolsosLista.innerHTML = datos.reembolsos.map(r => `
       <div class="card">
@@ -497,8 +609,32 @@ function renderPrivado(){
 
 function fechaReporte(){
   const fecha = new Date();
-  const dias = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
-  const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+  const dias = [
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado"
+  ];
+
+  const meses = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre"
+  ];
+
   return `${dias[fecha.getDay()]} ${fecha.getDate()} de ${meses[fecha.getMonth()]} de ${fecha.getFullYear()}`;
 }
 
@@ -513,6 +649,7 @@ function generarHTMLReporte(){
             <h1>WOM Street Chiloé</h1>
             <p>Reporte comercial diario y mensual</p>
           </div>
+
           <div>
             <p>${fechaReporte()}</p>
           </div>
@@ -520,33 +657,80 @@ function generarHTMLReporte(){
 
         <div class="report-body">
           <div class="report-title">Gestión diaria</div>
+
           <div class="report-grid">
-            <div class="report-kpi"><span>Ventas día</span><strong>${d.ventas_dia}</strong></div>
-            <div class="report-kpi"><span>Meta diaria</span><strong>${d.meta_dia}</strong></div>
-            <div class="report-kpi"><span>Diferencia</span><strong>${d.gap_dia}</strong></div>
+            <div class="report-kpi">
+              <span>Ventas día</span>
+              <strong>${d.ventas_dia}</strong>
+            </div>
+
+            <div class="report-kpi">
+              <span>Meta diaria</span>
+              <strong>${d.meta_dia}</strong>
+            </div>
+
+            <div class="report-kpi">
+              <span>Diferencia</span>
+              <strong>${d.gap_dia}</strong>
+            </div>
           </div>
 
-          <div class="report-title">Avance individual del día</div>
+          <div class="report-title">Ventas del día</div>
+
           <table class="report-table">
             <thead>
-              <tr><th>Ejecutivo</th><th>Hoy</th></tr>
+              <tr>
+                <th>Ejecutivo</th>
+                <th>Hoy</th>
+              </tr>
             </thead>
+
             <tbody>
-              ${datos.equipo.map(e => `<tr><td>${e.nombre}</td><td>${e.ventas_dia}</td></tr>`).join("")}
+              ${datos.equipo.map(e => `
+                <tr>
+                  <td>${e.nombre}</td>
+                  <td>${e.ventas_dia}</td>
+                </tr>
+              `).join("")}
             </tbody>
           </table>
 
           <div class="report-title">Avance mensual Team Chiloé</div>
+
           <div class="report-grid">
-            <div class="report-kpi"><span>Meta grupal</span><strong>${d.meta_mes}</strong></div>
-            <div class="report-kpi"><span>PP actual</span><strong>${d.ventas_mtd}</strong></div>
-            <div class="report-kpi"><span>% avance</span><strong>${d.avance_meta}%</strong></div>
-            <div class="report-kpi"><span>Deberían llevar</span><strong>${d.deberian_llevar}</strong></div>
-            <div class="report-kpi"><span>Proyección</span><strong>${d.proyeccion}%</strong></div>
-            <div class="report-kpi"><span>GAP</span><strong>${d.gap}</strong></div>
+            <div class="report-kpi">
+              <span>Meta grupal</span>
+              <strong>${d.meta_mes}</strong>
+            </div>
+
+            <div class="report-kpi">
+              <span>PP actual</span>
+              <strong>${d.ventas_mtd}</strong>
+            </div>
+
+            <div class="report-kpi">
+              <span>% avance</span>
+              <strong>${d.avance_meta}%</strong>
+            </div>
+
+            <div class="report-kpi">
+              <span>Deberían llevar</span>
+              <strong>${d.deberian_llevar}</strong>
+            </div>
+
+            <div class="report-kpi">
+              <span>Proyección</span>
+              <strong>${d.proyeccion}%</strong>
+            </div>
+
+            <div class="report-kpi">
+              <span>GAP</span>
+              <strong>${d.gap}</strong>
+            </div>
           </div>
 
           <div class="report-title">Detalle mensual individual</div>
+
           <table class="report-table">
             <thead>
               <tr>
@@ -558,6 +742,7 @@ function generarHTMLReporte(){
                 <th>Estado</th>
               </tr>
             </thead>
+
             <tbody>
               ${datos.equipo.map(e => `
                 <tr>
@@ -587,7 +772,10 @@ async function descargarImagen(id, nombreArchivo){
   });
 
   const blob = await new Promise(resolve => canvas.toBlob(resolve,"image/png"));
-  const file = new File([blob], nombreArchivo, {type:"image/png"});
+
+  const file = new File([blob], nombreArchivo, {
+    type:"image/png"
+  });
 
   if(navigator.canShare && navigator.canShare({files:[file]})){
     await navigator.share({
@@ -605,8 +793,14 @@ async function descargarImagen(id, nombreArchivo){
 
 async function generarImagenReporte(){
   const area = document.getElementById("shareArea");
+
   area.innerHTML = generarHTMLReporte();
-  await descargarImagen("cardReporte","reporte-comercial-wom-street.png");
+
+  await descargarImagen(
+    "cardReporte",
+    "reporte-comercial-wom-street.png"
+  );
+
   area.innerHTML = "";
 }
 
