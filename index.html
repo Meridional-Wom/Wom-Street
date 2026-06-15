@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WOM Street Chiloé</title>
-  <link rel="stylesheet" href="styles.css?v=60">
+  <link rel="stylesheet" href="styles.css?v=70">
 </head>
 <body>
 
@@ -43,7 +43,7 @@
     <div class="hero-content">
       <div>
         <h2>TEAM CHILOÉ</h2>
-        <p>Seguimiento de PP, meta mensual, avance lineal y GAP comercial.</p>
+        <p>Seguimiento diario, avance mensual, meta grupal y desempeño individual.</p>
       </div>
 
       <button onclick="generarImagenReporte()" class="share-report-btn">
@@ -52,17 +52,11 @@
     </div>
   </div>
 
+  <h3>Gestión diaria</h3>
+  <div class="grid daily-grid" id="kpisDia"></div>
+
   <h3>Resumen Team Chiloé</h3>
   <div id="teamChiloe" class="team-axel"></div>
-
-  <h3>Gestión diaria</h3>
-  <div class="grid" id="kpisDia"></div>
-
-  <h3>Avance del mes</h3>
-  <div class="grid" id="kpisMes"></div>
-
-  <h3>Proyección de cierre</h3>
-  <div class="grid" id="kpisForecast"></div>
 
   <h3>Avisos importantes</h3>
   <div class="grid" id="avisosLista"></div>
@@ -92,7 +86,7 @@
 
     <div class="card report-panel">
       <h3>Reporte para WhatsApp</h3>
-      <p class="note">Genera un único reporte con avance diario, avance mensual y equipo.</p>
+      <p class="note">Genera un reporte con avance del día, avance mensual y detalle del equipo.</p>
 
       <div class="share-buttons">
         <button onclick="generarImagenReporte()">📤 Compartir reporte comercial</button>
@@ -115,6 +109,6 @@
 <div id="shareArea"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=60"></script>
+<script src="script.js?v=70"></script>
 </body>
 </html>
