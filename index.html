@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WOM Street Chiloé</title>
-  <link rel="stylesheet" href="styles.css?v=70">
+  <link rel="stylesheet" href="styles.css?v=80">
 </head>
 <body>
 
@@ -18,7 +18,7 @@
 </div>
 
 <header class="header">
-  <div>
+  <div class="brand">
     <h1>WOM <span>Street Chiloé</span></h1>
     <p>Panel comercial y operativo</p>
   </div>
@@ -31,7 +31,6 @@
 
 <nav class="nav">
   <button onclick="mostrar('inicio')" class="active">Inicio</button>
-  <button onclick="mostrar('publicidad')">Publicidad</button>
   <button onclick="mostrar('links')">Links</button>
   <button onclick="mostrar('lider')">Líder</button>
 </nav>
@@ -55,16 +54,17 @@
   <h3>Gestión diaria</h3>
   <div class="grid daily-grid" id="kpisDia"></div>
 
+  <h3>Avance individual del día</h3>
+  <div id="avanceDiarioIndividual" class="daily-team-list"></div>
+
   <h3>Resumen Team Chiloé</h3>
   <div id="teamChiloe" class="team-axel"></div>
 
+  <h3>Desempeño individual mensual</h3>
+  <div id="desempenoMensual" class="team-axel"></div>
+
   <h3>Avisos importantes</h3>
   <div class="grid" id="avisosLista"></div>
-</section>
-
-<section id="publicidad" class="section">
-  <h2>Publicidad</h2>
-  <div class="grid" id="publicidadLista"></div>
 </section>
 
 <section id="links" class="section">
@@ -86,7 +86,7 @@
 
     <div class="card report-panel">
       <h3>Reporte para WhatsApp</h3>
-      <p class="note">Genera un reporte con avance del día, avance mensual y detalle del equipo.</p>
+      <p class="note">Genera un reporte con avance diario, avance mensual y detalle del equipo.</p>
 
       <div class="share-buttons">
         <button onclick="generarImagenReporte()">📤 Compartir reporte comercial</button>
@@ -109,6 +109,6 @@
 <div id="shareArea"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=70"></script>
+<script src="script.js?v=80"></script>
 </body>
 </html>
