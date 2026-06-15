@@ -10,32 +10,45 @@ function toggleSidebar(){
   const sidebar = document.getElementById("sidebar");
   const overlay = document.getElementById("sidebarOverlay");
 
-  if(sidebar) sidebar.classList.toggle("active");
-  if(overlay) overlay.classList.toggle("active");
+  if(sidebar){
+    sidebar.classList.toggle("active");
+  }
+
+  if(overlay){
+    overlay.classList.toggle("active");
+  }
 }
 
 function cerrarSidebar(){
   const sidebar = document.getElementById("sidebar");
   const overlay = document.getElementById("sidebarOverlay");
 
-  if(sidebar) sidebar.classList.remove("active");
-  if(overlay) overlay.classList.remove("active");
+  if(sidebar){
+    sidebar.classList.remove("active");
+  }
+
+  if(overlay){
+    overlay.classList.remove("active");
+  }
 }
 
 function ocultarLoader(){
   const loader = document.getElementById("loader");
+
   if(loader){
     loader.style.opacity = "0";
-    setTimeout(() => loader.remove(), 500);
+    setTimeout(() => loader.remove(), 450);
   }
 }
 
-setTimeout(() => ocultarLoader(), 10000);
+setTimeout(() => ocultarLoader(), 12000);
 
 async function iniciar(){
   try{
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
+
+    console.log("DATA GOOGLE SHEETS:", data);
 
     datos = transformarDatos(data);
     renderTodo();
@@ -111,7 +124,7 @@ function numero(valor){
   return isNaN(n) ? 0 : n;
 }
 
-function porcentajeDecimal(valor, meta){
+function porcentaje(valor, meta){
   if(!meta || meta === 0) return 0;
   return Math.round((valor / meta) * 100);
 }
@@ -138,14 +151,41 @@ function fechaSoloDia(){
   });
 }
 
-function formatoFecha(){
-  return fechaSoloDia();
+function fechaReporte(){
+  const fecha = new Date();
+
+  const dias = [
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado"
+  ];
+
+  const meses = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre"
+  ];
+
+  return `${dias[fecha.getDay()]} ${fecha.getDate()} de ${meses[fecha.getMonth()]} de ${fecha.getFullYear()}`;
 }
 
 function transformarDatos(data){
   const dashboard = data.dashboard || {};
 
-  let equipo = (data.equipo || []).map(e => ({
+  const equipo = (data.equipo || []).map(e => ({
     nombre: obtener(e, [
       "TEAM CHILOÉ",
       "TEAM CHILOE",
@@ -177,8 +217,8 @@ function transformarDatos(data){
     ])
   })).filter(e => e.nombre);
 
-  const ventasDiaEquipo = equipo.reduce((total, e) => total + e.ventas_dia, 0);
-  const ventasMTDEquipo = equipo.reduce((total, e) => total + e.mtd, 0);
+  const ventasDiaEquipo = equipo.reduce((total,e) => total + e.ventas_dia,0);
+  const ventasMTDEquipo = equipo.reduce((total,e) => total + e.mtd,0);
 
   const dashboardFinal = {
     ventas_dia: numero(obtener(dashboard, [
@@ -236,7 +276,6 @@ function transformarDatos(data){
     ]),
 
     dashboard: dashboardFinal,
-
     equipo: equipo,
 
     avisos:(data.avisos || []).map(a => ({
@@ -244,11 +283,17 @@ function transformarDatos(data){
       descripcion: obtener(a, ["Descripción","Descripcion"])
     })).filter(a => a.titulo || a.descripcion),
 
-    recursos:(data.recursos || data.links || []).map(l => ({
-      nombre: obtener(l, ["Nombre","Título","Titulo"]),
-      categoria: obtener(l, ["Categoría","Categoria","Tipo","Descripción","Descripcion"]),
-      url: obtener(l, ["URL","Link"]) || "#"
-    })).filter(l => l.nombre),
+    recursos:(data.recursos || data.links || []).map(r => ({
+      nombre: obtener(r, ["Nombre","Título","Titulo"]),
+      categoria: obtener(r, [
+        "Categoría",
+        "Categoria",
+        "Tipo",
+        "Descripción",
+        "Descripcion"
+      ]),
+      url: obtener(r, ["URL","Link"]) || "#"
+    })).filter(r => r.nombre),
 
     rutas:(data.rutas || []).map(r => ({
       dia: obtener(r, ["Día","Dia","Fecha"]),
@@ -309,8 +354,8 @@ function calcular(){
   const d = datos.dashboard;
 
   d.gap_dia = d.ventas_dia - d.meta_dia;
-  d.avance_meta = porcentajeDecimal(d.ventas_mtd, d.meta_mes);
-  d.proyeccion = porcentajeDecimal(d.ventas_mtd, d.deberian_llevar);
+  d.avance_meta = porcentaje(d.ventas_mtd,d.meta_mes);
+  d.proyeccion = porcentaje(d.ventas_mtd,d.deberian_llevar);
   d.gap = d.ventas_mtd - d.deberian_llevar;
 
   const cantidad = datos.equipo.length || 1;
@@ -318,8 +363,8 @@ function calcular(){
 
   datos.equipo.forEach(e => {
     e.meta = META_EJECUTIVO;
-    e.avance_meta = porcentajeDecimal(e.mtd, META_EJECUTIVO);
-    e.proyeccion = porcentajeDecimal(e.mtd, deberianIndividual);
+    e.avance_meta = porcentaje(e.mtd,META_EJECUTIVO);
+    e.proyeccion = porcentaje(e.mtd,deberianIndividual);
     e.gap = Math.round(e.mtd - deberianIndividual);
     e.estado_dia = e.ventas_dia > 0 ? "Con venta" : "Sin venta";
   });
@@ -331,7 +376,7 @@ function renderTodo(){
   calcular();
   renderHeader();
   renderKpisDia();
-  renderAvanceDiarioIndividual();
+  renderVentasDia();
   renderTeamChiloe();
   renderDesempenoMensual();
   renderAvisos();
@@ -340,16 +385,14 @@ function renderTodo(){
 }
 
 function renderHeader(){
-  const fecha = formatoFecha();
+  const fecha = fechaSoloDia();
 
   const el = document.getElementById("ultimaActualizacion");
-
   if(el){
     el.textContent = "Actualizado: " + fecha;
   }
 
   const sidebarFecha = document.getElementById("sidebarFecha");
-
   if(sidebarFecha){
     sidebarFecha.textContent = fecha;
   }
@@ -357,11 +400,11 @@ function renderHeader(){
 
 function renderKpisDia(){
   const d = datos.dashboard;
-  const kpisDia = document.getElementById("kpisDia");
+  const contenedor = document.getElementById("kpisDia");
 
-  if(!kpisDia) return;
+  if(!contenedor) return;
 
-  kpisDia.innerHTML = `
+  contenedor.innerHTML = `
     <div class="kpi-card">
       <div class="kpi-icon">🛍️</div>
       <div>
@@ -388,7 +431,7 @@ function renderKpisDia(){
   `;
 }
 
-function renderAvanceDiarioIndividual(){
+function renderVentasDia(){
   const contenedor = document.getElementById("avanceDiarioIndividual");
 
   if(!contenedor) return;
@@ -399,7 +442,7 @@ function renderAvanceDiarioIndividual(){
 
       <div class="daily-info">
         <h4>${e.nombre}</h4>
-        <p>Ventas del día</p>
+        <p>${e.estado_dia}</p>
         <strong>${e.ventas_dia}</strong>
       </div>
     </div>
@@ -607,37 +650,6 @@ function renderPrivado(){
   }
 }
 
-function fechaReporte(){
-  const fecha = new Date();
-
-  const dias = [
-    "Domingo",
-    "Lunes",
-    "Martes",
-    "Miércoles",
-    "Jueves",
-    "Viernes",
-    "Sábado"
-  ];
-
-  const meses = [
-    "enero",
-    "febrero",
-    "marzo",
-    "abril",
-    "mayo",
-    "junio",
-    "julio",
-    "agosto",
-    "septiembre",
-    "octubre",
-    "noviembre",
-    "diciembre"
-  ];
-
-  return `${dias[fecha.getDay()]} ${fecha.getDate()} de ${meses[fecha.getMonth()]} de ${fecha.getFullYear()}`;
-}
-
 function generarHTMLReporte(){
   const d = datos.dashboard;
 
@@ -762,7 +774,7 @@ function generarHTMLReporte(){
   `;
 }
 
-async function descargarImagen(id, nombreArchivo){
+async function descargarImagen(id,nombreArchivo){
   const elemento = document.getElementById(id);
 
   const canvas = await html2canvas(elemento,{
@@ -773,7 +785,7 @@ async function descargarImagen(id, nombreArchivo){
 
   const blob = await new Promise(resolve => canvas.toBlob(resolve,"image/png"));
 
-  const file = new File([blob], nombreArchivo, {
+  const file = new File([blob],nombreArchivo,{
     type:"image/png"
   });
 
@@ -804,9 +816,9 @@ async function generarImagenReporte(){
   area.innerHTML = "";
 }
 
-window.addEventListener("load", () => {
+window.addEventListener("load",() => {
   iniciar().catch(error => {
-    console.error("Error general:", error);
+    console.error("Error general:",error);
     ocultarLoader();
     alert("Error al iniciar la web. Revisa script.js.");
   });
