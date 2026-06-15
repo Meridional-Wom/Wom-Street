@@ -1,6 +1,9 @@
 const CODIGO_LIDER = "WSCHILOE2026";
 const API_URL = "https://script.google.com/macros/s/AKfycbxP2L869vhRVma1iNcwDEY8sV8X7OunPWuve4ot0BDr3v9fJFZmvhvZWjo2suF3cJsKdw/exec";
 
+const META_EJECUTIVO = 33;
+const META_GRUPAL = 131;
+
 let datos = {};
 
 function ocultarLoader(){
@@ -136,7 +139,7 @@ function transformarDatos(data){
     nombre: obtener(e, ["TEAM CHILOÉ","TEAM CHILOE","Ejecutivo","Usuario","Nombre"]),
     ventas_dia: numero(obtener(e, ["Ventas Día","Ventas Dia","Ventas día","Hoy"])),
     mtd: numero(obtener(e, ["PP","Ventas MTD","MTD"])),
-    meta: numero(obtener(e, ["Meta Mes","Meta mes","Meta"])),
+    meta: META_EJECUTIVO,
     observacion: obtener(e, ["Observación","Observacion"])
   })).filter(e => e.nombre);
 
@@ -147,7 +150,7 @@ function transformarDatos(data){
     ventas_dia: numero(obtener(dashboard, ["Ventas día","Ventas Día","Ventas dia","Ventas Dia"])),
     meta_dia: numero(obtener(dashboard, ["Meta día","Meta Día","Meta dia","Meta Dia"])),
     ventas_mtd: numero(obtener(dashboard, ["Ventas MTD","MTD","Ventas acumuladas","TOTAL"])),
-    meta_mes: numero(obtener(dashboard, ["Meta mes","Meta Mes","Meta mensual","META"])),
+    meta_mes: META_GRUPAL,
     deberian_llevar: numero(obtener(dashboard, ["Deberían llevar","Deberian llevar","DEBERIAN LLEVAR"])),
     fcst: numero(obtener(dashboard, ["FCST","FCST manual","FCST Manual","Forecast","FCST auto"]))
   };
@@ -160,8 +163,8 @@ function transformarDatos(data){
     dashboardFinal.ventas_mtd = ventasMTDEquipo;
   }
 
-  if(dashboardFinal.meta_mes === 0){
-    dashboardFinal.meta_mes = 131;
+  if(dashboardFinal.meta_dia === 0){
+    dashboardFinal.meta_dia = 8;
   }
 
   if(dashboardFinal.deberian_llevar === 0){
@@ -247,27 +250,27 @@ function calcular(){
   const d = datos.dashboard;
 
   d.cumplimiento_dia = porcentaje(d.ventas_dia, d.meta_dia);
-  d.cumplimiento_mes = porcentaje(d.ventas_mtd, d.meta_mes);
+
+  d.avance_meta = porcentajeDecimal(d.ventas_mtd, d.meta_mes);
   d.proyeccion_lineal = porcentajeDecimal(d.ventas_mtd, d.deberian_llevar);
   d.gap = d.ventas_mtd - d.deberian_llevar;
-  d.diferencia_fcst = d.fcst - d.meta_mes;
-  d.estado_fcst = porcentaje(d.fcst, d.meta_mes);
 
   const cantidad = datos.equipo.length || 1;
-  const linealIndividual = d.deberian_llevar / cantidad;
+  const deberianIndividual = d.deberian_llevar / cantidad;
 
   datos.equipo.forEach(e => {
-    e.cumplimiento = porcentaje(e.mtd, e.meta);
-    e.gap = e.mtd - e.meta;
-    e.proyeccion_lineal = porcentajeDecimal(e.mtd, linealIndividual);
+    e.meta = META_EJECUTIVO;
+    e.avance_meta = porcentajeDecimal(e.mtd, META_EJECUTIVO);
+    e.proyeccion_lineal = porcentajeDecimal(e.mtd, deberianIndividual);
+    e.gap = e.mtd - deberianIndividual;
   });
 }
 
 function renderTodo(){
   calcular();
   renderHeader();
-  renderTeamChiloe();
   renderKpis();
+  renderTeamChiloe();
   renderAvisos();
   renderPublicidad();
   renderLinks();
@@ -296,63 +299,6 @@ function kpi(titulo, valor, subtitulo, progreso){
   `;
 }
 
-function renderTeamChiloe(){
-  const contenedor = document.getElementById("teamChiloe");
-  if(!contenedor) return;
-
-  const d = datos.dashboard;
-
-  contenedor.innerHTML = `
-    <div class="team-table-card">
-      <div class="team-table-header">
-        <div>TEAM CHILOÉ</div>
-        <div>PP</div>
-        <div>PROYECCIÓN LINEAL</div>
-        <div>ESTADO</div>
-      </div>
-
-      ${datos.equipo.map(e => `
-        <div class="team-table-row">
-          <div>${e.nombre}</div>
-          <div>${e.mtd}</div>
-          <div>
-            <div class="lineal-wrap">
-              <div class="lineal-bar">
-                <span class="${color(e.proyeccion_lineal)}" style="width:${Math.min(e.proyeccion_lineal,100)}%"></span>
-              </div>
-              <strong>${e.proyeccion_lineal}%</strong>
-            </div>
-          </div>
-          <div><span class="badge ${color(e.proyeccion_lineal)}">${estado(e.proyeccion_lineal)}</span></div>
-        </div>
-      `).join("")}
-
-      <div class="team-summary">
-        <div>
-          <span>TOTAL</span>
-          <strong>${d.ventas_mtd}</strong>
-        </div>
-        <div>
-          <span>META</span>
-          <strong>${d.meta_mes}</strong>
-        </div>
-        <div>
-          <span>PROYECCIÓN LINEAL</span>
-          <strong>${d.proyeccion_lineal}%</strong>
-        </div>
-        <div>
-          <span>DEBERÍAN LLEVAR</span>
-          <strong>${d.deberian_llevar}</strong>
-        </div>
-        <div>
-          <span>GAP</span>
-          <strong class="${d.gap < 0 ? "negativo" : "positivo"}">${d.gap}</strong>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
 function renderKpis(){
   const d = datos.dashboard;
 
@@ -370,27 +316,97 @@ function renderKpis(){
 
   if(kpisMes){
     kpisMes.innerHTML = `
-      ${kpi("Total actual PP", d.ventas_mtd, "Puntos personales")}
-      ${kpi("Meta mensual", d.meta_mes, "Objetivo mensual")}
+      ${kpi("Total actual PP", d.ventas_mtd, "Avance del equipo")}
+      ${kpi("Meta grupal", d.meta_mes, "Meta mensual Team Chiloé")}
+      ${kpi("% avance meta", d.avance_meta + "%", "PP actual vs meta grupal", d.avance_meta)}
       ${kpi("Deberían llevar", d.deberian_llevar, "Según avance lineal")}
-      ${kpi("Proyección lineal", d.proyeccion_lineal + "%", estado(d.proyeccion_lineal), d.proyeccion_lineal)}
+      ${kpi("% proyección lineal", d.proyeccion_lineal + "%", estado(d.proyeccion_lineal), d.proyeccion_lineal)}
       ${kpi("GAP", d.gap, "Contra deberían llevar")}
     `;
   }
 
   if(kpisForecast){
-    kpisForecast.innerHTML = `
-      ${kpi("FCST", d.fcst, "Proyección de cierre")}
-      ${kpi("Diferencia FCST", d.diferencia_fcst, "Forecast vs meta")}
-      <div class="card">
-        <div class="kpi-title">Estado de cierre</div>
-        <div class="kpi-value">
-          <span class="badge ${color(d.estado_fcst)}">${estado(d.estado_fcst)}</span>
-        </div>
-        <p class="kpi-sub">Según la proyección actual</p>
-      </div>
-    `;
+    kpisForecast.innerHTML = "";
+    kpisForecast.style.display = "none";
   }
+}
+
+function renderTeamChiloe(){
+  const contenedor = document.getElementById("teamChiloe");
+  if(!contenedor) return;
+
+  const d = datos.dashboard;
+
+  contenedor.innerHTML = `
+    <div class="team-table-card">
+
+      <div class="team-section-title">Resumen Team Chiloé</div>
+
+      <div class="team-table-header team-main-header">
+        <div>EQUIPO</div>
+        <div>PP ACTUAL</div>
+        <div>META GRUPAL</div>
+        <div>% AVANCE</div>
+        <div>DEBERÍAN LLEVAR</div>
+        <div>GAP</div>
+        <div>ESTADO</div>
+      </div>
+
+      <div class="team-table-row team-main-row">
+        <div><strong>TEAM CHILOÉ</strong></div>
+        <div>${d.ventas_mtd}</div>
+        <div>${d.meta_mes}</div>
+        <div>
+          <div class="lineal-wrap">
+            <div class="lineal-bar">
+              <span class="${color(d.avance_meta)}" style="width:${Math.min(d.avance_meta,100)}%"></span>
+            </div>
+            <strong>${d.avance_meta}%</strong>
+          </div>
+        </div>
+        <div>${d.deberian_llevar}<br><small>${d.proyeccion_lineal}%</small></div>
+        <div><strong class="${d.gap < 0 ? "negativo" : "positivo"}">${d.gap}</strong></div>
+        <div><span class="badge ${color(d.proyeccion_lineal)}">${estado(d.proyeccion_lineal)}</span></div>
+      </div>
+
+      <div class="team-section-title">Desempeño individual</div>
+
+      <div class="team-table-header individual-header">
+        <div>Ejecutivo</div>
+        <div>PP actual</div>
+        <div>Meta individual</div>
+        <div>% avance vs meta</div>
+        <div>% proyección lineal</div>
+        <div>Estado</div>
+      </div>
+
+      ${datos.equipo.map(e => `
+        <div class="team-table-row individual-row">
+          <div>${e.nombre}</div>
+          <div>${e.mtd}</div>
+          <div>${e.meta}</div>
+          <div>
+            <div class="lineal-wrap">
+              <div class="lineal-bar">
+                <span class="${color(e.avance_meta)}" style="width:${Math.min(e.avance_meta,100)}%"></span>
+              </div>
+              <strong>${e.avance_meta}%</strong>
+            </div>
+          </div>
+          <div>
+            <div class="lineal-wrap">
+              <div class="lineal-bar">
+                <span class="${color(e.proyeccion_lineal)}" style="width:${Math.min(e.proyeccion_lineal,100)}%"></span>
+              </div>
+              <strong>${e.proyeccion_lineal}%</strong>
+            </div>
+          </div>
+          <div><span class="badge ${color(e.proyeccion_lineal)}">${estado(e.proyeccion_lineal)}</span></div>
+        </div>
+      `).join("")}
+
+    </div>
+  `;
 }
 
 function renderAvisos(){
@@ -455,8 +471,8 @@ function renderPrivado(){
         <div class="person-grid">
           <div class="mini"><span>Hoy</span><strong>${e.ventas_dia}</strong></div>
           <div class="mini"><span>PP</span><strong>${e.mtd}</strong></div>
+          <div class="mini"><span>Avance</span><strong>${e.avance_meta}%</strong></div>
           <div class="mini"><span>Lineal</span><strong>${e.proyeccion_lineal}%</strong></div>
-          <div class="mini"><span>GAP</span><strong>${e.gap}</strong></div>
         </div>
 
         <p>${e.observacion}</p>
@@ -510,74 +526,6 @@ function primerNombre(nombre){
   return String(nombre || "").trim().split(" ")[0] || "";
 }
 
-function filaDia(e){
-  return `
-    <div style="display:grid;grid-template-columns:52px 1fr 120px;align-items:center;border-bottom:2px solid #eeeaf5;padding:10px 0;font-size:24px;color:#161226;">
-      <div style="width:36px;height:36px;border-radius:50%;background:#35108f;color:white;display:flex;align-items:center;justify-content:center;font-size:18px;">●</div>
-      <div>${primerNombre(e.nombre)}</div>
-      <strong style="text-align:right;color:#35108f;font-size:26px;">${e.ventas_dia}</strong>
-    </div>
-  `;
-}
-
-function filaMes(e){
-  return `
-    <div style="display:grid;grid-template-columns:52px 1.4fr .8fr .9fr .9fr;align-items:center;border-bottom:2px solid #eeeaf5;padding:10px 0;font-size:21px;color:#161226;">
-      <div style="width:36px;height:36px;border-radius:50%;background:#35108f;color:white;display:flex;align-items:center;justify-content:center;font-size:18px;">●</div>
-      <div>${primerNombre(e.nombre)}</div>
-      <strong style="color:#35108f;text-align:center;">${e.mtd}</strong>
-      <div style="text-align:center;">${e.proyeccion_lineal}%</div>
-      <div style="background:#ffe0f0;color:#e11d48;border-radius:12px;padding:8px 12px;font-weight:900;text-align:center;">${estado(e.proyeccion_lineal)}</div>
-    </div>
-  `;
-}
-
-function generarHTMLReporte(){
-  const d = datos.dashboard;
-
-  return `
-    <div id="cardReporte" style="font-family:Arial, Helvetica, sans-serif;box-sizing:border-box;width:1080px;height:1750px;background:linear-gradient(135deg,#25006d 0%,#35108f 45%,#681df2 78%,#ff2f93 100%);padding:40px;position:fixed;left:-9999px;top:0;">
-      <div style="width:100%;height:100%;background:#ffffff;border-radius:42px;padding:38px;display:flex;flex-direction:column;overflow:hidden;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #eeeaf5;padding-bottom:22px;">
-          <div>
-            <div style="color:#ff2f93;font-size:22px;font-weight:900;letter-spacing:2px;">REPORTE COMERCIAL</div>
-            <div style="color:#35108f;font-size:34px;font-weight:900;margin-top:6px;">WOM STREET CHILOÉ</div>
-          </div>
-          <div style="text-align:right;color:#35108f;font-weight:900;font-size:22px;">
-            <div>${fechaReporte()}</div>
-            <div style="margin-top:6px;">${horaReporte()} hrs</div>
-          </div>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:22px;margin:28px 0 16px;">
-          <div style="width:70px;height:70px;border-radius:50%;background:#ffe0f0;color:#ff2f93;display:flex;align-items:center;justify-content:center;font-size:34px;">📊</div>
-          <div style="color:#35108f;font-size:54px;font-weight:900;line-height:1;">TEAM CHILOÉ</div>
-        </div>
-
-        <div style="background:#f4f0fb;border-radius:22px;padding:22px;display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;">
-          <div><div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Total PP</div><div style="color:#35108f;font-size:42px;font-weight:900;">${d.ventas_mtd}</div></div>
-          <div><div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Meta</div><div style="color:#35108f;font-size:42px;font-weight:900;">${d.meta_mes}</div></div>
-          <div><div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Lineal</div><div style="color:#ff2f93;font-size:42px;font-weight:900;">${d.proyeccion_lineal}%</div></div>
-          <div><div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Deberían llevar</div><div style="color:#35108f;font-size:42px;font-weight:900;">${d.deberian_llevar}</div></div>
-          <div><div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">GAP</div><div style="color:#ff2f93;font-size:42px;font-weight:900;">${d.gap}</div></div>
-        </div>
-
-        <div style="color:#35108f;font-size:26px;font-weight:900;margin-bottom:8px;">EQUIPO – PROYECCIÓN LINEAL</div>
-
-        <div style="display:grid;grid-template-columns:52px 1.4fr .8fr .9fr .9fr;color:#35108f;font-size:16px;font-weight:900;border-top:2px solid #eeeaf5;border-bottom:2px solid #eeeaf5;padding:8px 0;">
-          <div></div>
-          <div>Ejecutivo</div>
-          <div style="text-align:center;">PP</div>
-          <div style="text-align:center;">Lineal</div>
-          <div style="text-align:center;">Estado</div>
-        </div>
-
-        <div>${datos.equipo.map(e => filaMes(e)).join("")}</div>
-      </div>
-    </div>
-  `;
-}
-
 async function descargarImagen(id, nombreArchivo){
   const elemento = document.getElementById(id);
 
@@ -606,7 +554,12 @@ async function descargarImagen(id, nombreArchivo){
 
 async function generarImagenReporte(){
   const area = document.getElementById("shareArea");
-  area.innerHTML = generarHTMLReporte();
+  area.innerHTML = document.getElementById("inicio").innerHTML;
+
+  const card = area.querySelector(".hero");
+  if(card) card.remove();
+
+  area.firstElementChild.id = "cardReporte";
   await descargarImagen("cardReporte","reporte-comercial-wom-street.png");
   area.innerHTML = "";
 }
