@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WOM Street Chiloé</title>
-  <link rel="stylesheet" href="styles.css?v=90" />
+  <link rel="stylesheet" href="styles.css?v=120" />
 </head>
 <body>
 
@@ -17,14 +17,30 @@
   </div>
 </div>
 
+<aside id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <h2>WOM STREET CHILOÉ</h2>
+    <p>Dashboard Comercial</p>
+  </div>
+
+  <button onclick="mostrar('inicio')">🏠 Inicio</button>
+  <button onclick="mostrar('recursos')">📁 Recursos</button>
+  <button onclick="mostrar('lider')">👤 Líder</button>
+
+  <div class="sidebar-footer">
+    <span>Actualizado</span>
+    <strong id="sidebarFecha">--/--/----</strong>
+  </div>
+</aside>
+
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="cerrarSidebar()"></div>
+
 <header class="header">
-  <div class="header-left">
-    <div class="brand-row">
-      <div class="menu-icon">☰</div>
-      <div>
-        <h1>WOM <span>Street Chiloé</span></h1>
-        <p>Dashboard Comercial</p>
-      </div>
+  <div class="brand-row">
+    <button class="menu-icon" onclick="toggleSidebar()">☰</button>
+    <div>
+      <h1>WOM STREET CHILOÉ</h1>
+      <p>Dashboard Comercial</p>
     </div>
   </div>
 
@@ -35,9 +51,9 @@
 </header>
 
 <nav class="nav">
-  <button onclick="mostrar('inicio')" class="active">🏠 Inicio</button>
-  <button onclick="mostrar('recursos')">📁 Recursos</button>
-  <button onclick="mostrar('lider')">👤 Líder</button>
+  <button onclick="mostrar('inicio')" class="active">Inicio</button>
+  <button onclick="mostrar('recursos')">Recursos</button>
+  <button onclick="mostrar('lider')">Líder</button>
 </nav>
 
 <main>
@@ -47,33 +63,33 @@
   <div class="hero">
     <div>
       <h2>TEAM CHILOÉ</h2>
-      <p>Seguimiento diario, avance mensual, meta grupal y desempeño individual.</p>
+      <p>Seguimiento diario, avance mensual y desempeño individual.</p>
     </div>
     <button onclick="generarImagenReporte()" class="share-report-btn">📤 Compartir reporte</button>
   </div>
 
   <div class="block">
-    <h3>📈 Gestión diaria</h3>
+    <h3>Gestión diaria</h3>
     <div class="kpi-grid" id="kpisDia"></div>
   </div>
 
   <div class="block">
-    <h3>👥 Avance individual del día</h3>
+    <h3>Ventas del día</h3>
     <div class="daily-cards" id="avanceDiarioIndividual"></div>
   </div>
 
   <div class="block">
-    <h3>👥 Resumen Team Chiloé</h3>
+    <h3>Resumen Team Chiloé</h3>
     <div id="teamChiloe"></div>
   </div>
 
   <div class="block">
-    <h3>🏆 Desempeño individual <span id="cantidadEjecutivos"></span></h3>
+    <h3>Desempeño individual <span id="cantidadEjecutivos"></span></h3>
     <div class="executive-grid" id="desempenoMensual"></div>
   </div>
 
   <div class="block">
-    <h3>📣 Avisos importantes</h3>
+    <h3>Avisos importantes</h3>
     <div class="grid" id="avisosLista"></div>
   </div>
 
@@ -117,14 +133,12 @@
 </main>
 
 <footer class="footer">
-  <span>♡ WOM</span>
-  <span>Equipo Chiloé — Juntos llegamos más lejos 🚀</span>
-  <span>#SomosWOM</span>
+  <span>WOM STREET CHILOÉ</span>
 </footer>
 
 <div id="shareArea"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=90"></script>
+<script src="script.js?v=120"></script>
 </body>
 </html>
