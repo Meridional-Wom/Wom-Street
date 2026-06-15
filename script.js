@@ -17,12 +17,8 @@ async function iniciar(){
   try{
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
-
-    console.log("DATA GOOGLE SHEETS:", data);
-
     datos = transformarDatos(data);
     renderTodo();
-
   }catch(error){
     console.error("Error al cargar datos:", error);
     alert("No se pudieron cargar los datos desde Google Sheets.");
@@ -42,10 +38,8 @@ async function actualizarDatos(){
   try{
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
-
     datos = transformarDatos(data);
     renderTodo();
-
   }catch(error){
     console.error("Error al actualizar datos:", error);
     alert("No se pudieron actualizar los datos.");
@@ -68,7 +62,6 @@ function normalizar(texto){
 
 function obtener(obj, nombres){
   if(!obj) return "";
-
   const claves = Object.keys(obj);
 
   for(const nombre of nombres){
@@ -92,6 +85,28 @@ function numero(valor){
 
   const n = Number(valor);
   return isNaN(n) ? 0 : n;
+}
+
+function porcentaje(valor, meta){
+  if(!meta || meta === 0) return 0;
+  return Math.round((valor / meta) * 100);
+}
+
+function porcentajeDecimal(valor, meta){
+  if(!meta || meta === 0) return 0;
+  return Number(((valor / meta) * 100).toFixed(2));
+}
+
+function color(p){
+  if(p >= 100) return "green";
+  if(p >= 80) return "yellow";
+  return "red";
+}
+
+function estado(p){
+  if(p >= 100) return "Bueno";
+  if(p >= 80) return "En progreso";
+  return "En riesgo";
 }
 
 function formatoFecha(valor){
@@ -118,9 +133,9 @@ function transformarDatos(data){
   const dashboard = data.dashboard || {};
 
   const equipo = (data.equipo || []).map(e => ({
-    nombre: obtener(e, ["Ejecutivo"]),
+    nombre: obtener(e, ["TEAM CHILOÉ","TEAM CHILOE","Ejecutivo","Usuario","Nombre"]),
     ventas_dia: numero(obtener(e, ["Ventas Día","Ventas Dia","Ventas día","Hoy"])),
-    mtd: numero(obtener(e, ["Ventas MTD","MTD"])),
+    mtd: numero(obtener(e, ["PP","Ventas MTD","MTD"])),
     meta: numero(obtener(e, ["Meta Mes","Meta mes","Meta"])),
     observacion: obtener(e, ["Observación","Observacion"])
   })).filter(e => e.nombre);
@@ -131,8 +146,9 @@ function transformarDatos(data){
   const dashboardFinal = {
     ventas_dia: numero(obtener(dashboard, ["Ventas día","Ventas Día","Ventas dia","Ventas Dia"])),
     meta_dia: numero(obtener(dashboard, ["Meta día","Meta Día","Meta dia","Meta Dia"])),
-    ventas_mtd: numero(obtener(dashboard, ["Ventas MTD","MTD","Ventas acumuladas"])),
-    meta_mes: numero(obtener(dashboard, ["Meta mes","Meta Mes","Meta mensual"])),
+    ventas_mtd: numero(obtener(dashboard, ["Ventas MTD","MTD","Ventas acumuladas","TOTAL"])),
+    meta_mes: numero(obtener(dashboard, ["Meta mes","Meta Mes","Meta mensual","META"])),
+    deberian_llevar: numero(obtener(dashboard, ["Deberían llevar","Deberian llevar","DEBERIAN LLEVAR"])),
     fcst: numero(obtener(dashboard, ["FCST","FCST manual","FCST Manual","Forecast","FCST auto"]))
   };
 
@@ -144,10 +160,17 @@ function transformarDatos(data){
     dashboardFinal.ventas_mtd = ventasMTDEquipo;
   }
 
-  const modulos = (data.modulo || []).map(m => ({
-    nombre: obtener(m, ["Modulo","Módulo"]),
-    visible: obtener(m, ["Visible"])
-  })).filter(m => m.nombre);
+  if(dashboardFinal.meta_mes === 0){
+    dashboardFinal.meta_mes = 131;
+  }
+
+  if(dashboardFinal.deberian_llevar === 0){
+    dashboardFinal.deberian_llevar = 66;
+  }
+
+  if(dashboardFinal.fcst === 0){
+    dashboardFinal.fcst = Math.round(dashboardFinal.ventas_mtd * 2);
+  }
 
   return {
     ultima_actualizacion: obtener(dashboard, [
@@ -159,18 +182,11 @@ function transformarDatos(data){
 
     dashboard: dashboardFinal,
     equipo: equipo,
-    modulos: modulos,
 
     avisos:(data.avisos || []).map(a => ({
       titulo: obtener(a, ["Título","Titulo"]),
       descripcion: obtener(a, ["Descripción","Descripcion"])
     })).filter(a => a.titulo || a.descripcion),
-
-    biblioteca:(data.biblioteca || []).map(b => ({
-      titulo: obtener(b, ["Título","Titulo","Nombre"]),
-      descripcion: obtener(b, ["Descripción","Descripcion","Categoría","Categoria"]),
-      url: obtener(b, ["Link","URL"]) || "#"
-    })).filter(b => b.titulo || b.descripcion),
 
     publicidad:(data.publicidad || []).map(p => ({
       titulo: obtener(p, ["Título","Titulo","Nombre"]),
@@ -204,11 +220,14 @@ function mostrar(id){
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
 
   const seccion = document.getElementById(id);
-
   if(seccion){
     seccion.classList.add("active");
     window.scrollTo({top:0,behavior:"smooth"});
   }
+
+  document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
+  const boton = document.querySelector(`.nav button[onclick="mostrar('${id}')"]`);
+  if(boton) boton.classList.add("active");
 }
 
 function validarCodigo(){
@@ -224,77 +243,35 @@ function validarCodigo(){
   }
 }
 
-function porcentaje(valor, meta){
-  if(!meta || meta === 0) return 0;
-  return Math.round((valor / meta) * 100);
-}
-
-function color(p){
-  if(p >= 90) return "green";
-  if(p >= 60) return "yellow";
-  return "red";
-}
-
-function estado(p){
-  if(p >= 90) return "Sobre meta";
-  if(p >= 60) return "En riesgo";
-  return "Bajo meta";
-}
-
 function calcular(){
   const d = datos.dashboard;
 
   d.cumplimiento_dia = porcentaje(d.ventas_dia, d.meta_dia);
   d.cumplimiento_mes = porcentaje(d.ventas_mtd, d.meta_mes);
-  d.gap = d.ventas_mtd - d.meta_mes;
+  d.proyeccion_lineal = porcentajeDecimal(d.ventas_mtd, d.deberian_llevar);
+  d.gap = d.ventas_mtd - d.deberian_llevar;
   d.diferencia_fcst = d.fcst - d.meta_mes;
   d.estado_fcst = porcentaje(d.fcst, d.meta_mes);
+
+  const cantidad = datos.equipo.length || 1;
+  const linealIndividual = d.deberian_llevar / cantidad;
 
   datos.equipo.forEach(e => {
     e.cumplimiento = porcentaje(e.mtd, e.meta);
     e.gap = e.mtd - e.meta;
+    e.proyeccion_lineal = porcentajeDecimal(e.mtd, linealIndividual);
   });
 }
 
 function renderTodo(){
   calcular();
   renderHeader();
+  renderTeamChiloe();
   renderKpis();
-  renderEquipo();
   renderAvisos();
-  renderBiblioteca();
   renderPublicidad();
   renderLinks();
   renderPrivado();
-  aplicarVisibilidadModulos();
-}
-
-function aplicarVisibilidadModulos(){
-  if(!datos.modulos || datos.modulos.length === 0) return;
-
-  datos.modulos.forEach(m => {
-    const moduloHoja = normalizar(m.nombre);
-    const visible = ["si","sí","yes","true","1"].includes(normalizar(m.visible));
-
-    document.querySelectorAll("[data-modulo]").forEach(el => {
-      const moduloElemento = normalizar(el.getAttribute("data-modulo"));
-
-      if(moduloElemento === moduloHoja){
-        el.style.display = visible ? "" : "none";
-      }
-    });
-  });
-
-  const seccionActiva = document.querySelector(".section.active");
-
-  if(seccionActiva && seccionActiva.style.display === "none"){
-    const primeraVisible = Array.from(document.querySelectorAll(".section"))
-      .find(s => s.style.display !== "none");
-
-    if(primeraVisible){
-      mostrar(primeraVisible.id);
-    }
-  }
 }
 
 function renderHeader(){
@@ -319,6 +296,63 @@ function kpi(titulo, valor, subtitulo, progreso){
   `;
 }
 
+function renderTeamChiloe(){
+  const contenedor = document.getElementById("teamChiloe");
+  if(!contenedor) return;
+
+  const d = datos.dashboard;
+
+  contenedor.innerHTML = `
+    <div class="team-table-card">
+      <div class="team-table-header">
+        <div>TEAM CHILOÉ</div>
+        <div>PP</div>
+        <div>PROYECCIÓN LINEAL</div>
+        <div>ESTADO</div>
+      </div>
+
+      ${datos.equipo.map(e => `
+        <div class="team-table-row">
+          <div>${e.nombre}</div>
+          <div>${e.mtd}</div>
+          <div>
+            <div class="lineal-wrap">
+              <div class="lineal-bar">
+                <span class="${color(e.proyeccion_lineal)}" style="width:${Math.min(e.proyeccion_lineal,100)}%"></span>
+              </div>
+              <strong>${e.proyeccion_lineal}%</strong>
+            </div>
+          </div>
+          <div><span class="badge ${color(e.proyeccion_lineal)}">${estado(e.proyeccion_lineal)}</span></div>
+        </div>
+      `).join("")}
+
+      <div class="team-summary">
+        <div>
+          <span>TOTAL</span>
+          <strong>${d.ventas_mtd}</strong>
+        </div>
+        <div>
+          <span>META</span>
+          <strong>${d.meta_mes}</strong>
+        </div>
+        <div>
+          <span>PROYECCIÓN LINEAL</span>
+          <strong>${d.proyeccion_lineal}%</strong>
+        </div>
+        <div>
+          <span>DEBERÍAN LLEVAR</span>
+          <strong>${d.deberian_llevar}</strong>
+        </div>
+        <div>
+          <span>GAP</span>
+          <strong class="${d.gap < 0 ? "negativo" : "positivo"}">${d.gap}</strong>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderKpis(){
   const d = datos.dashboard;
 
@@ -336,10 +370,11 @@ function renderKpis(){
 
   if(kpisMes){
     kpisMes.innerHTML = `
-      ${kpi("Ventas MTD", d.ventas_mtd, "Acumulado del mes")}
+      ${kpi("Total actual PP", d.ventas_mtd, "Puntos personales")}
       ${kpi("Meta mensual", d.meta_mes, "Objetivo mensual")}
-      ${kpi("Cumplimiento mes", d.cumplimiento_mes + "%", estado(d.cumplimiento_mes), d.cumplimiento_mes)}
-      ${kpi("GAP", d.gap, "Diferencia contra meta")}
+      ${kpi("Deberían llevar", d.deberian_llevar, "Según avance lineal")}
+      ${kpi("Proyección lineal", d.proyeccion_lineal + "%", estado(d.proyeccion_lineal), d.proyeccion_lineal)}
+      ${kpi("GAP", d.gap, "Contra deberían llevar")}
     `;
   }
 
@@ -358,27 +393,6 @@ function renderKpis(){
   }
 }
 
-function renderEquipo(){
-  const contenedor = document.getElementById("equipoCards");
-  if(!contenedor) return;
-
-  contenedor.innerHTML = datos.equipo.map(e => `
-    <div class="person">
-      <div class="person-top">
-        <div class="person-name">${e.nombre}</div>
-        <span class="badge ${color(e.cumplimiento)}">${estado(e.cumplimiento)}</span>
-      </div>
-
-      <div class="person-grid">
-        <div class="mini"><span>Hoy</span><strong>${e.ventas_dia}</strong></div>
-        <div class="mini"><span>MTD</span><strong>${e.mtd}</strong></div>
-        <div class="mini"><span>Meta</span><strong>${e.meta}</strong></div>
-        <div class="mini"><span>Cump.</span><strong>${e.cumplimiento}%</strong></div>
-      </div>
-    </div>
-  `).join("");
-}
-
 function renderAvisos(){
   const contenedor = document.getElementById("avisosLista");
   if(!contenedor) return;
@@ -387,19 +401,6 @@ function renderAvisos(){
     <div class="card">
       <h3>${a.titulo}</h3>
       <p>${a.descripcion}</p>
-    </div>
-  `).join("");
-}
-
-function renderBiblioteca(){
-  const contenedor = document.getElementById("bibliotecaLista");
-  if(!contenedor) return;
-
-  contenedor.innerHTML = datos.biblioteca.map(b => `
-    <div class="card">
-      <h3>${b.titulo}</h3>
-      <p>${b.descripcion}</p>
-      <a href="${b.url}" target="_blank">Abrir</a>
     </div>
   `).join("");
 }
@@ -415,28 +416,14 @@ function renderPublicidad(){
 
   contenedor.innerHTML = campañas.map(p => `
     <div class="campania-card">
-
-      ${p.imagen ? `
-        <img
-          src="${p.imagen}"
-          alt="${p.titulo}"
-          class="campania-img"
-          loading="lazy"
-          referrerpolicy="no-referrer"
-        >
-      ` : ""}
-
+      ${p.imagen ? `<img src="${p.imagen}" alt="${p.titulo}" class="campania-img" loading="lazy" referrerpolicy="no-referrer">` : ""}
       <div class="campania-body">
         <h3>${p.titulo}</h3>
         <p>${p.descripcion}</p>
-
         <div class="campania-actions">
-          <a href="${p.url}" target="_blank" class="btn-campania">
-            Ver material
-          </a>
+          <a href="${p.url}" target="_blank" class="btn-campania">Ver material</a>
         </div>
       </div>
-
     </div>
   `).join("");
 }
@@ -462,13 +449,13 @@ function renderPrivado(){
       <div class="person">
         <div class="person-top">
           <div class="person-name">${e.nombre}</div>
-          <span class="badge ${color(e.cumplimiento)}">${estado(e.cumplimiento)}</span>
+          <span class="badge ${color(e.proyeccion_lineal)}">${estado(e.proyeccion_lineal)}</span>
         </div>
 
         <div class="person-grid">
           <div class="mini"><span>Hoy</span><strong>${e.ventas_dia}</strong></div>
-          <div class="mini"><span>MTD</span><strong>${e.mtd}</strong></div>
-          <div class="mini"><span>Meta</span><strong>${e.meta}</strong></div>
+          <div class="mini"><span>PP</span><strong>${e.mtd}</strong></div>
+          <div class="mini"><span>Lineal</span><strong>${e.proyeccion_lineal}%</strong></div>
           <div class="mini"><span>GAP</span><strong>${e.gap}</strong></div>
         </div>
 
@@ -504,7 +491,6 @@ function fechaReporte(){
   const fecha = new Date();
   const dias = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
   const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-
   return `${dias[fecha.getDay()]} ${fecha.getDate()} de ${meses[fecha.getMonth()]} de ${fecha.getFullYear()}`;
 }
 
@@ -526,75 +512,22 @@ function primerNombre(nombre){
 
 function filaDia(e){
   return `
-    <div style="
-      display:grid;
-      grid-template-columns:52px 1fr 120px;
-      align-items:center;
-      border-bottom:2px solid #eeeaf5;
-      padding:10px 0;
-      font-size:24px;
-      color:#161226;
-    ">
-      <div style="
-        width:36px;
-        height:36px;
-        border-radius:50%;
-        background:#35108f;
-        color:white;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:18px;
-      ">●</div>
-
+    <div style="display:grid;grid-template-columns:52px 1fr 120px;align-items:center;border-bottom:2px solid #eeeaf5;padding:10px 0;font-size:24px;color:#161226;">
+      <div style="width:36px;height:36px;border-radius:50%;background:#35108f;color:white;display:flex;align-items:center;justify-content:center;font-size:18px;">●</div>
       <div>${primerNombre(e.nombre)}</div>
-
-      <strong style="
-        text-align:right;
-        color:#35108f;
-        font-size:26px;
-      ">${e.ventas_dia}</strong>
+      <strong style="text-align:right;color:#35108f;font-size:26px;">${e.ventas_dia}</strong>
     </div>
   `;
 }
 
 function filaMes(e){
   return `
-    <div style="
-      display:grid;
-      grid-template-columns:52px 1.4fr .8fr .9fr .9fr;
-      align-items:center;
-      border-bottom:2px solid #eeeaf5;
-      padding:10px 0;
-      font-size:21px;
-      color:#161226;
-    ">
-      <div style="
-        width:36px;
-        height:36px;
-        border-radius:50%;
-        background:#35108f;
-        color:white;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:18px;
-      ">●</div>
-
+    <div style="display:grid;grid-template-columns:52px 1.4fr .8fr .9fr .9fr;align-items:center;border-bottom:2px solid #eeeaf5;padding:10px 0;font-size:21px;color:#161226;">
+      <div style="width:36px;height:36px;border-radius:50%;background:#35108f;color:white;display:flex;align-items:center;justify-content:center;font-size:18px;">●</div>
       <div>${primerNombre(e.nombre)}</div>
-
       <strong style="color:#35108f;text-align:center;">${e.mtd}</strong>
-
-      <div style="text-align:center;">${e.meta}</div>
-
-      <div style="
-        background:#ffe0f0;
-        color:#e11d48;
-        border-radius:12px;
-        padding:8px 12px;
-        font-weight:900;
-        text-align:center;
-      ">${e.cumplimiento}%</div>
+      <div style="text-align:center;">${e.proyeccion_lineal}%</div>
+      <div style="background:#ffe0f0;color:#e11d48;border-radius:12px;padding:8px 12px;font-weight:900;text-align:center;">${estado(e.proyeccion_lineal)}</div>
     </div>
   `;
 }
@@ -603,27 +536,8 @@ function generarHTMLReporte(){
   const d = datos.dashboard;
 
   return `
-    <div id="cardReporte" style="
-      font-family:Arial, Helvetica, sans-serif;
-      box-sizing:border-box;
-      width:1080px;
-      height:1750px;
-      background:linear-gradient(135deg,#25006d 0%,#35108f 45%,#681df2 78%,#ff2f93 100%);
-      padding:40px;
-      position:fixed;
-      left:-9999px;
-      top:0;
-    ">
-      <div style="
-        width:100%;
-        height:100%;
-        background:#ffffff;
-        border-radius:42px;
-        padding:38px;
-        display:flex;
-        flex-direction:column;
-        overflow:hidden;
-      ">
+    <div id="cardReporte" style="font-family:Arial, Helvetica, sans-serif;box-sizing:border-box;width:1080px;height:1750px;background:linear-gradient(135deg,#25006d 0%,#35108f 45%,#681df2 78%,#ff2f93 100%);padding:40px;position:fixed;left:-9999px;top:0;">
+      <div style="width:100%;height:100%;background:#ffffff;border-radius:42px;padding:38px;display:flex;flex-direction:column;overflow:hidden;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #eeeaf5;padding-bottom:22px;">
           <div>
             <div style="color:#ff2f93;font-size:22px;font-weight:900;letter-spacing:2px;">REPORTE COMERCIAL</div>
@@ -636,76 +550,29 @@ function generarHTMLReporte(){
         </div>
 
         <div style="display:flex;align-items:center;gap:22px;margin:28px 0 16px;">
-          <div style="width:70px;height:70px;border-radius:50%;background:#ffe0f0;color:#ff2f93;display:flex;align-items:center;justify-content:center;font-size:34px;">📅</div>
-          <div style="color:#35108f;font-size:54px;font-weight:900;line-height:1;">AVANCE DEL DÍA</div>
+          <div style="width:70px;height:70px;border-radius:50%;background:#ffe0f0;color:#ff2f93;display:flex;align-items:center;justify-content:center;font-size:34px;">📊</div>
+          <div style="color:#35108f;font-size:54px;font-weight:900;line-height:1;">TEAM CHILOÉ</div>
         </div>
 
-        <div style="background:#fbedf7;border-radius:24px;padding:22px 34px;display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:22px;">
-          <div style="border-right:2px solid #dfd3ef;">
-            <div style="color:#706989;font-size:18px;font-weight:900;text-transform:uppercase;">Ventas del día</div>
-            <div style="color:#ff2f93;font-size:54px;font-weight:900;">${d.ventas_dia}</div>
-          </div>
-          <div>
-            <div style="color:#706989;font-size:18px;font-weight:900;text-transform:uppercase;">Meta del día</div>
-            <div style="color:#ff2f93;font-size:54px;font-weight:900;">${d.meta_dia}</div>
-          </div>
+        <div style="background:#f4f0fb;border-radius:22px;padding:22px;display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;">
+          <div><div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Total PP</div><div style="color:#35108f;font-size:42px;font-weight:900;">${d.ventas_mtd}</div></div>
+          <div><div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Meta</div><div style="color:#35108f;font-size:42px;font-weight:900;">${d.meta_mes}</div></div>
+          <div><div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Lineal</div><div style="color:#ff2f93;font-size:42px;font-weight:900;">${d.proyeccion_lineal}%</div></div>
+          <div><div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Deberían llevar</div><div style="color:#35108f;font-size:42px;font-weight:900;">${d.deberian_llevar}</div></div>
+          <div><div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">GAP</div><div style="color:#ff2f93;font-size:42px;font-weight:900;">${d.gap}</div></div>
         </div>
 
-        <div style="color:#35108f;font-size:28px;font-weight:900;margin:4px 0 8px;">VENTAS INDIVIDUALES DEL DÍA</div>
+        <div style="color:#35108f;font-size:26px;font-weight:900;margin-bottom:8px;">EQUIPO – PROYECCIÓN LINEAL</div>
 
-        <div style="display:grid;grid-template-columns:52px 1fr 120px;color:#35108f;font-size:17px;font-weight:900;border-top:2px solid #eeeaf5;border-bottom:2px solid #eeeaf5;padding:8px 0;">
+        <div style="display:grid;grid-template-columns:52px 1.4fr .8fr .9fr .9fr;color:#35108f;font-size:16px;font-weight:900;border-top:2px solid #eeeaf5;border-bottom:2px solid #eeeaf5;padding:8px 0;">
           <div></div>
           <div>Ejecutivo</div>
-          <div style="text-align:right;">Ventas del día</div>
+          <div style="text-align:center;">PP</div>
+          <div style="text-align:center;">Lineal</div>
+          <div style="text-align:center;">Estado</div>
         </div>
 
-        <div>${datos.equipo.map(e => filaDia(e)).join("")}</div>
-
-        <div style="margin-top:30px;padding:24px;border-radius:30px;background:linear-gradient(135deg,#f5efff,#ffffff);border:2px solid #eeeaf5;">
-          <div style="display:flex;align-items:center;gap:22px;margin-bottom:16px;">
-            <div style="width:70px;height:70px;border-radius:50%;background:#efe8ff;color:#35108f;display:flex;align-items:center;justify-content:center;font-size:34px;">📊</div>
-            <div style="color:#35108f;font-size:50px;font-weight:900;line-height:1;">AVANCE MENSUAL</div>
-          </div>
-
-          <div style="background:#f4f0fb;border-radius:22px;padding:22px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:20px;">
-            <div>
-              <div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Ventas MTD</div>
-              <div style="color:#35108f;font-size:42px;font-weight:900;">${d.ventas_mtd}</div>
-            </div>
-            <div>
-              <div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Meta mensual</div>
-              <div style="color:#35108f;font-size:42px;font-weight:900;">${d.meta_mes}</div>
-            </div>
-            <div>
-              <div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">% Cumplimiento</div>
-              <div style="color:#ff2f93;font-size:42px;font-weight:900;">${d.cumplimiento_mes}%</div>
-            </div>
-            <div>
-              <div style="color:#706989;font-size:15px;font-weight:900;text-transform:uppercase;">Diferencia</div>
-              <div style="color:#ff2f93;font-size:42px;font-weight:900;">${d.gap}</div>
-            </div>
-          </div>
-
-          <div style="color:#35108f;font-size:26px;font-weight:900;margin-bottom:8px;">EQUIPO – VENTAS MTD</div>
-
-          <div style="display:grid;grid-template-columns:52px 1.4fr .8fr .9fr .9fr;color:#35108f;font-size:16px;font-weight:900;border-top:2px solid #eeeaf5;border-bottom:2px solid #eeeaf5;padding:8px 0;">
-            <div></div>
-            <div>Ejecutivo</div>
-            <div style="text-align:center;">Ventas MTD</div>
-            <div style="text-align:center;">Meta individual</div>
-            <div style="text-align:center;">Cumplimiento</div>
-          </div>
-
-          <div>${datos.equipo.map(e => filaMes(e)).join("")}</div>
-
-          <div style="display:grid;grid-template-columns:52px 1.4fr .8fr .9fr .9fr;align-items:center;padding-top:16px;font-size:25px;font-weight:900;">
-            <div style="color:#35108f;font-size:32px;">👥</div>
-            <div style="color:#35108f;">TOTAL EQUIPO</div>
-            <div style="color:#35108f;text-align:center;">${d.ventas_mtd}</div>
-            <div style="color:#161226;text-align:center;">${d.meta_mes}</div>
-            <div style="color:#ff2f93;text-align:center;font-size:36px;">${d.cumplimiento_mes}%</div>
-          </div>
-        </div>
+        <div>${datos.equipo.map(e => filaMes(e)).join("")}</div>
       </div>
     </div>
   `;
