@@ -30,7 +30,6 @@
     <button onclick="mostrarVistaDesdeSidebar('inicioView')">Inicio</button>
     <button onclick="mostrarVistaDesdeSidebar('recursosView')">Recursos</button>
     <button onclick="mostrarVistaDesdeSidebar('liderView')">Líder</button>
-    <button onclick="cargarDatos()">Actualizar datos</button>
   </aside>
 
   <header class="topbar">
@@ -185,49 +184,89 @@
   </section>
 
   <div id="reportCanvas" class="report-canvas">
-    <div class="report-top">
-      <div class="report-logo">📱</div>
-      <div>
-        <h1>WOM STREET CHILOÉ</h1>
-        <p id="reporteFecha">--</p>
+    <div class="report-sheet">
+
+      <div class="report-header">
+        <div>
+          <div class="report-label">REPORTE COMERCIAL</div>
+          <h1>WOM STREET CHILOÉ</h1>
+        </div>
+        <div class="report-date" id="reporteFecha">--</div>
       </div>
-    </div>
 
-    <div class="report-title">REPORTE COMERCIAL</div>
+      <div class="report-divider"></div>
 
-    <div class="report-section">
-      <h2>GESTIÓN DEL DÍA</h2>
-      <div class="report-kpis three">
-        <div><small>Ventas día</small><strong id="repVentasDia">0</strong></div>
-        <div><small>Meta día</small><strong id="repMetaDia">0</strong></div>
-        <div><small>Diferencia</small><strong id="repDiferencia">0</strong></div>
+      <div class="report-title-row">
+        <div class="report-calendar">📅</div>
+        <h2>AVANCE DEL DÍA</h2>
       </div>
-    </div>
 
-    <div class="report-section">
-      <h2>AVANCE MENSUAL GRUPAL</h2>
-      <div class="report-kpis three">
-        <div><small>PP actual</small><strong id="repPP">0</strong></div>
-        <div><small>Meta</small><strong id="repMeta">0</strong></div>
-        <div><small>Avance</small><strong id="repAvance">0%</strong></div>
-        <div><small>FCST</small><strong id="repFCST">0%</strong></div>
-        <div><small>GAP</small><strong id="repGap">0</strong></div>
-        <div><small>Estado</small><strong id="repEstado">--</strong></div>
+      <div class="report-day-box">
+        <div>
+          <small>VENTAS DEL DÍA</small>
+          <strong id="repVentasDia">0</strong>
+        </div>
+        <div>
+          <small>META DEL DÍA</small>
+          <strong id="repMetaDia">0</strong>
+        </div>
       </div>
-    </div>
 
-    <div class="report-section">
-      <h2>VENTAS DEL DÍA POR EJECUTIVO</h2>
-      <div id="repVentasEjecutivos" class="report-list"></div>
-    </div>
+      <div class="report-section-clean">
+        <h3>VENTAS INDIVIDUALES DEL DÍA</h3>
 
-    <div class="report-section">
-      <h2>AVANCE INDIVIDUAL</h2>
-      <div id="repAvanceIndividual" class="report-individual"></div>
-    </div>
+        <div class="report-table-head">
+          <span>Ejecutivo</span>
+          <span>Ventas del día</span>
+        </div>
 
-    <div class="report-footer">
-      WOM STREET CHILOÉ · Reporte generado automáticamente
+        <div id="repVentasEjecutivos"></div>
+      </div>
+
+      <div class="report-month-card">
+        <div class="report-title-row small">
+          <div class="report-calendar">📊</div>
+          <h2>AVANCE MENSUAL</h2>
+        </div>
+
+        <div class="report-month-kpis">
+          <div>
+            <small>VENTAS MTD</small>
+            <strong id="repPP">0</strong>
+          </div>
+          <div>
+            <small>META MENSUAL</small>
+            <strong id="repMeta">0</strong>
+          </div>
+          <div>
+            <small>% CUMPLIMIENTO</small>
+            <strong class="pink" id="repAvance">0%</strong>
+          </div>
+          <div>
+            <small>DIFERENCIA</small>
+            <strong class="pink" id="repGap">0</strong>
+          </div>
+        </div>
+
+        <h3>EQUIPO – VENTAS MTD</h3>
+
+        <div class="report-table-head mtd">
+          <span>Ejecutivo</span>
+          <span>Ventas MTD</span>
+          <span>Meta individual</span>
+          <span>Cumplimiento</span>
+        </div>
+
+        <div id="repAvanceIndividual"></div>
+
+        <div class="report-total-row">
+          <strong>👥 TOTAL EQUIPO</strong>
+          <strong id="repTotalPP">0</strong>
+          <strong id="repTotalMeta">0</strong>
+          <strong class="pink" id="repTotalCumplimiento">0%</strong>
+        </div>
+      </div>
+
     </div>
   </div>
 
