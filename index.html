@@ -5,12 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WOM Street Chiloé</title>
   <link rel="stylesheet" href="styles.css" />
+
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 
 <body>
 
+  <div id="loader" class="loader">
+    <div class="loader-card">
+      <div class="loader-icon">📱</div>
+      <h1>WOM STREET CHILOÉ</h1>
+      <p>Sincronizando datos...</p>
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <div id="sidebarOverlay" class="sidebar-overlay" onclick="cerrarSidebar()"></div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-head">
+      <h2>WOM STREET CHILOÉ</h2>
+      <button onclick="cerrarSidebar()">×</button>
+    </div>
+
+    <button onclick="mostrarVistaDesdeSidebar('inicioView')">Inicio</button>
+    <button onclick="mostrarVistaDesdeSidebar('recursosView')">Recursos</button>
+    <button onclick="mostrarVistaDesdeSidebar('liderView')">Líder</button>
+    <button onclick="cargarDatos()">Actualizar datos</button>
+  </aside>
+
   <header class="topbar">
-    <button class="icon-btn">☰</button>
+    <button class="icon-btn" onclick="abrirSidebar()">☰</button>
 
     <div class="brand">
       <h1>WOM STREET CHILOÉ</h1>
@@ -30,7 +55,7 @@
         <div class="hero-icon">📱</div>
         <div>
           <h2>TEAM CHILOÉ</h2>
-          <button class="primary-btn" onclick="compartirReporte()">Compartir reporte</button>
+          <button class="primary-btn" onclick="compartirReporteImagen()">Compartir reporte</button>
         </div>
       </section>
 
@@ -63,32 +88,20 @@
     <section id="recursosView" class="view">
       <h2 class="page-title">RECURSOS</h2>
 
-      <div class="leader-card">
-        <div class="leader-icon">📚</div>
-        <div>
-          <h3>Biblioteca</h3>
-          <p>Materiales y documentos de apoyo</p>
-        </div>
-        <span>›</span>
-      </div>
+      <section class="block">
+        <h3>BIBLIOTECA</h3>
+        <div id="bibliotecaContainer" class="resource-list"></div>
+      </section>
 
-      <div class="leader-card">
-        <div class="leader-icon">📢</div>
-        <div>
-          <h3>Publicidad</h3>
-          <p>Campañas y piezas disponibles</p>
-        </div>
-        <span>›</span>
-      </div>
+      <section class="block">
+        <h3>PUBLICIDAD</h3>
+        <div id="publicidadContainer" class="resource-list"></div>
+      </section>
 
-      <div class="leader-card">
-        <div class="leader-icon">🔗</div>
-        <div>
-          <h3>Links</h3>
-          <p>Accesos útiles para la gestión</p>
-        </div>
-        <span>›</span>
-      </div>
+      <section class="block">
+        <h3>LINKS</h3>
+        <div id="linksContainer" class="resource-list"></div>
+      </section>
     </section>
 
     <section id="liderView" class="view">
@@ -167,6 +180,70 @@
     </section>
 
   </main>
+
+  <div id="reportCanvas" class="report-canvas">
+    <div class="report-head">
+      <h1>WOM STREET CHILOÉ</h1>
+      <p id="reporteFecha">Actualizado: --</p>
+    </div>
+
+    <div class="report-section">
+      <h2>GESTIÓN DIARIA</h2>
+      <div class="report-grid">
+        <div>
+          <small>Ventas día</small>
+          <strong id="repVentasDia">0</strong>
+        </div>
+        <div>
+          <small>Meta día</small>
+          <strong id="repMetaDia">0</strong>
+        </div>
+        <div>
+          <small>Diferencia</small>
+          <strong id="repDiferencia">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h2>AVANCE MENSUAL</h2>
+      <div class="report-grid">
+        <div>
+          <small>PP Actual</small>
+          <strong id="repPP">0</strong>
+        </div>
+        <div>
+          <small>Meta</small>
+          <strong id="repMeta">0</strong>
+        </div>
+        <div>
+          <small>Avance</small>
+          <strong id="repAvance">0%</strong>
+        </div>
+        <div>
+          <small>FCST</small>
+          <strong id="repFCST">0%</strong>
+        </div>
+        <div>
+          <small>GAP</small>
+          <strong id="repGap">0</strong>
+        </div>
+        <div>
+          <small>Estado</small>
+          <strong id="repEstado">--</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h2>VENTAS DEL DÍA</h2>
+      <div id="repVentasEjecutivos" class="report-list"></div>
+    </div>
+
+    <div class="report-footer">
+      Generado automáticamente
+    </div>
+  </div>
 
   <nav class="bottom-nav">
     <button class="nav-btn active" onclick="mostrarVista('inicioView', this)">
