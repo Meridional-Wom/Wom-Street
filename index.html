@@ -4,150 +4,187 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WOM Street Chiloé</title>
-  <link rel="stylesheet" href="styles.css?v=200" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
 
-<div id="loader">
-  <div class="loader-card">
-    <div class="loader-logo">WOM</div>
-    <h2>Street Chiloé</h2>
-    <p>Sincronizando datos comerciales...</p>
-    <div class="loader-bar"><span></span></div>
-  </div>
-</div>
+  <header class="topbar">
+    <button class="icon-btn">☰</button>
 
-<aside id="sidebar" class="sidebar">
-  <div class="sidebar-header">
-    <h2>WOM STREET CHILOÉ</h2>
-    <p>Dashboard Comercial</p>
-  </div>
-
-  <button onclick="mostrar('inicio')">🏠 Inicio</button>
-  <button onclick="mostrar('recursos')">📁 Recursos</button>
-  <button onclick="mostrar('lider')">👤 Líder</button>
-
-  <div class="sidebar-footer">
-    <span>Actualizado</span>
-    <strong id="sidebarFecha">--/--/----</strong>
-  </div>
-</aside>
-
-<div id="sidebarOverlay" class="sidebar-overlay" onclick="cerrarSidebar()"></div>
-
-<header class="header">
-  <div class="brand-row">
-    <button class="menu-icon" onclick="toggleSidebar()">☰</button>
-
-    <div>
+    <div class="brand">
       <h1>WOM STREET CHILOÉ</h1>
-      <p>Dashboard Comercial</p>
-    </div>
-  </div>
-
-  <div class="header-actions">
-    <div class="update" id="ultimaActualizacion">Actualizando...</div>
-    <button class="refresh-btn" onclick="actualizarDatos()">🔄</button>
-  </div>
-</header>
-
-<nav class="nav">
-  <button onclick="mostrar('inicio')" class="active">Inicio</button>
-  <button onclick="mostrar('recursos')">Recursos</button>
-  <button onclick="mostrar('lider')">Líder</button>
-</nav>
-
-<main>
-
-<section id="inicio" class="section active">
-
-  <div class="hero">
-    <div>
-      <h2>TEAM CHILOÉ</h2>
-      <p>Seguimiento diario, avance mensual y desempeño individual.</p>
+      <span id="fechaActualizacion">Actualizado: --</span>
     </div>
 
-    <button onclick="generarImagenReporte()" class="share-report-btn">
-      📤 Compartir reporte
+    <button class="icon-btn white" onclick="cargarDatos()">↻</button>
+  </header>
+
+  <main class="app">
+
+    <section id="inicioView" class="view active">
+
+      <div id="avisoImportante" class="aviso-importante hidden"></div>
+
+      <section class="hero-card">
+        <div class="hero-icon">📱</div>
+        <div>
+          <h2>TEAM CHILOÉ</h2>
+          <button class="primary-btn" onclick="compartirReporte()">Compartir reporte</button>
+        </div>
+      </section>
+
+      <section class="block">
+        <h3>GESTIÓN DIARIA</h3>
+        <div class="kpi-row" id="gestionDiaria"></div>
+      </section>
+
+      <section class="block">
+        <h3>VENTAS DEL DÍA</h3>
+        <div class="daily-list" id="ventasDiaLista"></div>
+      </section>
+
+      <section class="block">
+        <h3>RESUMEN TEAM CHILOÉ</h3>
+        <div class="summary-grid" id="resumenTeam"></div>
+      </section>
+
+      <section class="block">
+        <h3>DESEMPEÑO INDIVIDUAL</h3>
+        <div class="desempeno-list" id="desempenoIndividual"></div>
+      </section>
+
+      <section class="block">
+        <div id="avisosGenerales" class="avisos-generales"></div>
+      </section>
+
+    </section>
+
+    <section id="recursosView" class="view">
+      <h2 class="page-title">RECURSOS</h2>
+
+      <div class="leader-card">
+        <div class="leader-icon">📚</div>
+        <div>
+          <h3>Biblioteca</h3>
+          <p>Materiales y documentos de apoyo</p>
+        </div>
+        <span>›</span>
+      </div>
+
+      <div class="leader-card">
+        <div class="leader-icon">📢</div>
+        <div>
+          <h3>Publicidad</h3>
+          <p>Campañas y piezas disponibles</p>
+        </div>
+        <span>›</span>
+      </div>
+
+      <div class="leader-card">
+        <div class="leader-icon">🔗</div>
+        <div>
+          <h3>Links</h3>
+          <p>Accesos útiles para la gestión</p>
+        </div>
+        <span>›</span>
+      </div>
+    </section>
+
+    <section id="liderView" class="view">
+
+      <div id="loginLider" class="login-card">
+        <h2>LÍDER</h2>
+        <p>Acceso privado</p>
+
+        <input id="pinLider" type="password" placeholder="Código líder" />
+
+        <button class="primary-btn full" onclick="validarLider()">Ingresar</button>
+
+        <small id="loginError"></small>
+      </div>
+
+      <div id="panelLider" class="hidden">
+        <h2 class="page-title">LÍDER</h2>
+
+        <div class="leader-card" onclick="abrirModulo('registrarRuta')">
+          <div class="leader-icon">🗺️</div>
+          <div>
+            <h3>Registrar ruta</h3>
+            <p>Crear nueva ruta del equipo</p>
+          </div>
+          <span>›</span>
+        </div>
+
+        <div class="leader-card" onclick="abrirModulo('planes')">
+          <div class="leader-icon pink">🚦</div>
+          <div>
+            <h3>Planes de acción</h3>
+            <p>Seguimiento y acciones por ejecutivo</p>
+          </div>
+          <span>›</span>
+        </div>
+
+        <div class="leader-card" onclick="abrirModulo('bitacora')">
+          <div class="leader-icon yellow">📝</div>
+          <div>
+            <h3>Bitácora del mes</h3>
+            <p>Registro de gestiones importantes</p>
+          </div>
+          <span>›</span>
+        </div>
+
+        <div class="leader-card" onclick="abrirModulo('metas')">
+          <div class="leader-icon green">🎯</div>
+          <div>
+            <h3>Metas y cumplimiento mensual</h3>
+            <p>Avance del equipo y metas</p>
+          </div>
+          <span>›</span>
+        </div>
+
+        <div class="leader-card" onclick="abrirModulo('reembolsos')">
+          <div class="leader-icon blue">💸</div>
+          <div>
+            <h3>Reembolsos</h3>
+            <p>Gastos pendientes y pagados</p>
+          </div>
+          <span>›</span>
+        </div>
+
+        <div class="leader-card" onclick="abrirModulo('mes')">
+          <div class="leader-icon">📅</div>
+          <div>
+            <h3>Mes</h3>
+            <p>Resumen mensual, FCST, GAP y proyección</p>
+          </div>
+          <span>›</span>
+        </div>
+
+        <div id="moduloLider" class="module-box"></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="mostrarVista('inicioView', this)">
+      ⌂
+      <span>Inicio</span>
     </button>
-  </div>
 
-  <div class="block">
-    <h3>Gestión diaria</h3>
-    <div class="kpi-grid" id="kpisDia"></div>
-  </div>
+    <button class="nav-btn" onclick="mostrarVista('recursosView', this)">
+      ▣
+      <span>Recursos</span>
+    </button>
 
-  <div class="block">
-    <h3>Ventas del día</h3>
-    <div class="daily-cards" id="avanceDiarioIndividual"></div>
-  </div>
+    <button class="nav-btn" onclick="mostrarVista('liderView', this)">
+      ♙
+      <span>Líder</span>
+    </button>
+  </nav>
 
-  <div class="block">
-    <h3>Resumen Team Chiloé</h3>
-    <div id="teamChiloe"></div>
-  </div>
-
-  <div class="block">
-    <h3>Desempeño individual <span id="cantidadEjecutivos"></span></h3>
-    <div class="executive-grid" id="desempenoMensual"></div>
-  </div>
-
-  <div class="block">
-    <h3>Avisos importantes</h3>
-    <div class="grid" id="avisosLista"></div>
-  </div>
-
-</section>
-
-<section id="recursos" class="section">
-  <div class="page-title">
-    <h2>Recursos</h2>
-    <p>Links, imágenes, formularios, reportes y material comercial.</p>
-  </div>
-
-  <div class="resources-grid" id="recursosLista"></div>
-</section>
-
-<section id="lider" class="section">
-  <div id="loginLider" class="card login">
-    <h2>Acceso Líder</h2>
-    <p>Ingresa el código para ver información privada.</p>
-
-    <input type="password" id="codigo" placeholder="Código de acceso" />
-    <button onclick="validarCodigo()">Ingresar</button>
-
-    <p id="error"></p>
-  </div>
-
-  <div id="panelLider" class="private-panel hidden">
-    <h2>Panel Líder</h2>
-
-    <div class="card report-panel">
-      <h3>Reporte para WhatsApp</h3>
-      <p class="note">Genera un reporte con avance diario, mensual y detalle individual.</p>
-      <button onclick="generarImagenReporte()">📤 Compartir reporte comercial</button>
-    </div>
-
-    <h3>Ventas individuales</h3>
-    <div id="liderEquipo" class="team-list"></div>
-
-    <h3>Rutas</h3>
-    <div class="grid" id="rutasLista"></div>
-
-    <h3>Reembolsos</h3>
-    <div class="grid" id="reembolsosLista"></div>
-  </div>
-</section>
-
-</main>
-
-<footer class="footer">
-  WOM STREET CHILOÉ
-</footer>
-
-<div id="shareArea"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=200"></script>
+  <script src="script.js"></script>
 </body>
 </html>
