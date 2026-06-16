@@ -376,6 +376,38 @@ body{
   color:var(--morado);font-size:38px;font-weight:900;
 }
 
+.leader-dashboard{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+
+.leader-stat{
+  background:#fff;
+  border:1px solid var(--borde);
+  border-radius:18px;
+  padding:14px;
+  text-align:center;
+}
+
+.leader-stat-icon{
+  font-size:26px;
+  margin-bottom:6px;
+}
+
+.leader-stat-label{
+  font-size:12px;
+  font-weight:900;
+  color:var(--gris);
+  text-transform:uppercase;
+}
+
+.leader-stat-value{
+  font-size:28px;
+  font-weight:900;
+  color:var(--morado);
+}
+
 .module-card{
   padding:16px;margin-bottom:14px;background:white;
   border:1px solid var(--borde);border-radius:24px;
@@ -405,6 +437,204 @@ body{
 
 .save-msg{
   font-weight:900;color:var(--verde);margin-top:10px;
+}
+
+.module-toolbar{
+  display:flex;
+  gap:10px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+}
+
+.module-history{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:16px;
+}
+
+.module-form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.module-form label{
+  font-size:13px;
+  font-weight:900;
+  color:var(--morado3);
+}
+
+.module-form input,
+.module-form select,
+.module-form textarea{
+  width:100%;
+}
+
+.module-form textarea{
+  min-height:110px;
+}
+
+.registro-card{
+  background:#fff;
+  border:1px solid var(--borde);
+  border-radius:18px;
+  padding:14px;
+}
+
+.registro-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+
+.registro-title{
+  font-weight:900;
+  color:var(--morado);
+}
+
+.registro-fecha{
+  font-size:12px;
+  color:var(--gris);
+}
+
+.registro-body{
+  font-size:14px;
+  color:var(--texto);
+}
+
+.registro-actions{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+
+.historial-card{
+  background:#fff;
+  border:1px solid var(--borde);
+  border-radius:22px;
+  overflow:hidden;
+  margin-bottom:12px;
+}
+
+.historial-mes{
+  padding:16px;
+  font-size:18px;
+  font-weight:900;
+  color:var(--morado);
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.historial-contenido{
+  border-top:1px solid var(--borde);
+  display:none;
+}
+
+.historial-contenido.active{
+  display:block;
+}
+
+.historial-modulo{
+  padding:14px 18px;
+  border-bottom:1px solid var(--borde);
+  background:#faf8ff;
+  font-size:15px;
+  font-weight:900;
+  color:var(--morado3);
+  cursor:pointer;
+}
+
+.historial-registros{
+  display:none;
+  padding:10px;
+}
+
+.historial-registros.active{
+  display:block;
+}
+
+.historial-registro{
+  background:#fff;
+  border:1px solid var(--borde);
+  border-radius:16px;
+  padding:12px;
+  margin-bottom:10px;
+}
+
+.historial-registro strong{
+  display:block;
+  color:var(--morado);
+  margin-bottom:4px;
+}
+
+.historial-registro small{
+  display:block;
+  color:var(--gris);
+  margin-bottom:6px;
+}
+
+.historial-registro p{
+  margin:0;
+  font-size:14px;
+}
+
+.export-btn,
+.edit-btn,
+.delete-btn{
+  border:0;
+  border-radius:12px;
+  padding:10px 14px;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.export-btn{
+  background:#e9f7ef;
+  color:#15803d;
+}
+
+.edit-btn{
+  background:#eef2ff;
+  color:#4338ca;
+}
+
+.delete-btn{
+  background:#ffe4e6;
+  color:#be123c;
+}
+
+.badge{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+}
+
+.badge.pendiente{
+  background:#fef3c7;
+  color:#b45309;
+}
+
+.badge.seguimiento{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+
+.badge.completado{
+  background:#dcfce7;
+  color:#15803d;
+}
+
+.badge.rechazado{
+  background:#ffe4e6;
+  color:#be123c;
 }
 
 .lider-full{
@@ -588,7 +818,7 @@ body{
   color:var(--morado);border-top:5px solid var(--morado);
 }
 
-@media(max-width:420px){
+@media(max-width:480px){
   .brand h1{font-size:23px}
   .icon-btn{width:46px;height:46px;font-size:25px}
   .hero-card h2{font-size:27px}
@@ -600,4 +830,10 @@ body{
   .metric-mini small{font-size:9px}
   .metric-mini strong{font-size:16px}
   .sidebar{width:285px;left:-295px}
+  .leader-dashboard{grid-template-columns:repeat(2,1fr)}
+  .leader-stat-value{font-size:24px}
+  .historial-mes{font-size:16px}
+  .registro-header{flex-direction:column;align-items:flex-start}
+  .registro-actions{width:100%}
+  .registro-actions button{flex:1}
 }
