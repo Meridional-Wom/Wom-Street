@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WOM Street Chiloé</title>
-  <link rel="stylesheet" href="styles.css?v=20260616-2" />
+  <link rel="stylesheet" href="styles.css?v=20260616-6" />
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 
@@ -27,9 +27,9 @@
       <button onclick="cerrarSidebar()">×</button>
     </div>
 
-    <button onclick="mostrarVistaDesdeSidebar('inicioView')">Inicio</button>
-    <button onclick="mostrarVistaDesdeSidebar('recursosView')">Recursos</button>
-    <button onclick="mostrarVistaDesdeSidebar('liderView')">Líder</button>
+    <button onclick="mostrarVistaDesdeSidebar('inicioView')">🏠 Inicio</button>
+    <button onclick="mostrarVistaDesdeSidebar('recursosView')">📚 Recursos</button>
+    <button onclick="mostrarVistaDesdeSidebar('liderView')">👤 Líder</button>
   </aside>
 
   <header class="topbar">
@@ -115,11 +115,16 @@
       <div id="panelLider" class="hidden">
         <h2 class="page-title">LÍDER</h2>
 
-        <div class="leader-card" onclick="abrirModulo('registrarRuta')">
-          <div class="leader-icon">🗺️</div>
+        <section class="block">
+          <h3>DASHBOARD LÍDER</h3>
+          <div class="leader-dashboard" id="dashboardLider"></div>
+        </section>
+
+        <div class="leader-card" onclick="abrirModulo('rutas')">
+          <div class="leader-icon">📍</div>
           <div>
-            <h3>Registrar ruta</h3>
-            <p>Crear nueva ruta del equipo</p>
+            <h3>Rutas</h3>
+            <p>Registrar y revisar rutas del equipo</p>
           </div>
           <span>›</span>
         </div>
@@ -128,7 +133,16 @@
           <div class="leader-icon pink">🚦</div>
           <div>
             <h3>Planes de acción</h3>
-            <p>Seguimiento y acciones por ejecutivo</p>
+            <p>Compromisos y seguimiento comercial</p>
+          </div>
+          <span>›</span>
+        </div>
+
+        <div class="leader-card" onclick="abrirModulo('feedback')">
+          <div class="leader-icon blue">💬</div>
+          <div>
+            <h3>Feedback</h3>
+            <p>Coaching y retroalimentación individual</p>
           </div>
           <span>›</span>
         </div>
@@ -136,8 +150,8 @@
         <div class="leader-card" onclick="abrirModulo('bitacora')">
           <div class="leader-icon yellow">📝</div>
           <div>
-            <h3>Bitácora del mes</h3>
-            <p>Registro de gestiones importantes</p>
+            <h3>Bitácora</h3>
+            <p>Apuntes, ideas, acuerdos y seguimiento</p>
           </div>
           <span>›</span>
         </div>
@@ -145,8 +159,8 @@
         <div class="leader-card" onclick="abrirModulo('metas')">
           <div class="leader-icon green">🎯</div>
           <div>
-            <h3>Metas y cumplimiento mensual</h3>
-            <p>Avance del equipo y metas</p>
+            <h3>Metas</h3>
+            <p>Registro de compromisos de meta</p>
           </div>
           <span>›</span>
         </div>
@@ -155,16 +169,16 @@
           <div class="leader-icon blue">💸</div>
           <div>
             <h3>Reembolsos</h3>
-            <p>Gastos pendientes y pagados</p>
+            <p>Gastos pendientes, pagados y rechazados</p>
           </div>
           <span>›</span>
         </div>
 
-        <div class="leader-card" onclick="abrirModulo('mes')">
-          <div class="leader-icon">📅</div>
+        <div class="leader-card" onclick="abrirModulo('historial')">
+          <div class="leader-icon">📚</div>
           <div>
-            <h3>Mes</h3>
-            <p>Resumen mensual, FCST, GAP y proyección</p>
+            <h3>Historial</h3>
+            <p>Registros organizados por mes y módulo</p>
           </div>
           <span>›</span>
         </div>
@@ -239,16 +253,16 @@
             <strong id="repMeta">0</strong>
           </div>
           <div>
-            <small>% CUMPLIMIENTO</small>
+            <small>CUMPLIMIENTO</small>
             <strong class="pink" id="repAvance">0%</strong>
           </div>
           <div>
-            <small>DIFERENCIA</small>
+            <small>GAP</small>
             <strong class="pink" id="repGap">0</strong>
           </div>
         </div>
 
-        <h3>EQUIPO – VENTAS MTD</h3>
+        <h3>EQUIPO VENTAS MTD</h3>
 
         <div class="report-table-head mtd">
           <span>Ejecutivo</span>
@@ -272,21 +286,21 @@
 
   <nav class="bottom-nav">
     <button class="nav-btn active" onclick="mostrarVista('inicioView', this)">
-      ⌂
+      🏠
       <span>Inicio</span>
     </button>
 
     <button class="nav-btn" onclick="mostrarVista('recursosView', this)">
-      ▣
+      📚
       <span>Recursos</span>
     </button>
 
     <button class="nav-btn" onclick="mostrarVista('liderView', this)">
-      ♙
+      👤
       <span>Líder</span>
     </button>
   </nav>
 
-  <script src="script.js?v=20260616-4"></script>
+  <script src="script.js?v=20260616-6"></script>
 </body>
 </html>
