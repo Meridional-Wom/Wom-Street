@@ -30,16 +30,31 @@ function mostrarFechaWeb(){
 async function cargarDatos(){
   mostrarLoader();
 
+  const timeout = setTimeout(() => {
+    ocultarLoader();
+    renderDemo();
+    console.warn("Tiempo agotado conectando con Google Sheets.");
+  }, 8000);
+
   try{
     const res = await fetch(API_URL + "?v=" + Date.now());
+
+    if(!res.ok){
+      throw new Error("Error API: " + res.status);
+    }
+
     DATA = await res.json();
 
     renderInicio(DATA);
     renderRecursos(DATA);
     mostrarFechaWeb();
-    ocultarLoader();
+
   }catch(error){
-    console.error(error);
+    console.error("Error al cargar datos:", error);
+    renderDemo();
+
+  }finally{
+    clearTimeout(timeout);
     ocultarLoader();
   }
 }
@@ -219,3 +234,188 @@ function renderResumenTeam(d){
     ${summaryItem("📱","PP ACTUAL",d.ppActual)}
     ${summaryItem("📊","% AVANCE META",d.avanceMeta)}
     ${summaryItem("📋","DEBERÍAN LLEVAR",d.deberianLlevar)}
+    ${summaryItem("📈","PROYECCIÓN",d.proyeccion)}
+    ${summaryItem("↕","GAP",d.gap,true)}
+  `;
+}
+
+function summaryItem(icon,label,value,red=false){
+  return `
+    <div class="summary-item">
+      <div class="summary-icon">${icon}</div>
+      <div class="summary-label">${label}</div>
+      <div class="summary-value ${red && Number(value) < 0 ? "red" : ""}">${value}</div>
+    </div>
+  `;
+}
+
+function renderDesempenoIndividual(equipo){
+  const html = equipo.length ? equipo.map(e => {
+    const estadoClass = claseEstado(e.estado);
+    const dotClass = estadoClass === "verde" ? "green" : estadoClass === "amarillo" ? "yellow" : "red";
+
+    return `
+      <div class="person-card">
+        <div class="person-top">
+          <div class="person-name">
+            <div class="dot ${dotClass}"></div>
+            ${nombreCorto(e.ejecutivo)}
+          </div>
+          <div class="estado ${estadoClass}">${e.estado}</div>
+        </div>
+
+        <div class="person-metrics">
+          <div class="metric-mini"><small>PP</small><strong>${e.ventasMTD}</strong></div>
+          <div class="metric-mini"><small>Meta</small><strong>${e.metaMes}</strong></div>
+          <div class="metric-mini"><small>Avance</small><strong>${e.cumplimiento}</strong></div>
+          <div class="metric-mini"><small>FCST</small><strong>${e.fcst}</strong></div>
+          <div class="metric-mini"><small>GAP</small><strong class="${e.gap < 0 ? "red" : ""}">${e.gap}</strong></div>
+        </div>
+      </div>
+    `;
+  }).join("") : `<div class="empty-msg">Sin desempeño individual</div>`;
+
+  document.getElementById("desempenoIndividual").innerHTML = html;
+}
+
+function renderAvisosGenerales(avisos){
+  const generales = avisos.filter(a =>
+    String(pick(a, ["Prioridad","prioridad"])).toLowerCase() !== "alta" &&
+    String(pick(a, ["Activo","activo"]) || "Sí").toLowerCase() !== "no"
+  );
+
+  const lista = generales.length
+    ? generales.map(a => `<li>${pick(a, ["Descripción","Descripcion","descripcion","descripción","Título","Titulo"])}</li>`).join("")
+    : `<li>Sin avisos generales activos.</li>`;
+
+  document.getElementById("avisosGenerales").innerHTML = `
+    <h3>🔔 AVISOS GENERALES</h3>
+    <ul>${lista}</ul>
+  `;
+}
+
+function renderRecursos(data){
+  renderListaRecursos("bibliotecaContainer", data.biblioteca || [], "📚");
+  renderListaRecursos("publicidadContainer", data.publicidad || [], "📢");
+  renderListaRecursos("linksContainer", data.links || [], "🔗");
+}
+
+function renderListaRecursos(id, items, icono){
+  const box = document.getElementById(id);
+
+  if(!items || !items.length){
+    box.innerHTML = `<div class="empty-msg">Sin registros disponibles</div>`;
+    return;
+  }
+
+  box.innerHTML = items.map(item => {
+    const nombre = pick(item, ["Nombre","nombre","Título","Titulo","Módulo","Modulo"]) || "Recurso";
+    const desc = pick(item, ["Descripción","Descripcion","Categoria","Categoría","Tipo"]) || "Abrir enlace";
+    const url = pick(item, ["URL","Url","url","Link","link"]);
+
+    return `
+      <div class="resource-card" onclick="abrirLink('${escapeAttr(url)}')">
+        <div class="res-icon">${icono}</div>
+        <div>
+          <h4>${nombre}</h4>
+          <p>${desc}</p>
+        </div>
+        <span>›</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function abrirLink(url){
+  if(!url){
+    alert("Este recurso no tiene link cargado.");
+    return;
+  }
+
+  window.open(url, "_blank");
+}
+
+function validarLider(){
+  const pin = document.getElementById("pinLider").value.trim();
+
+  const codigo =
+    pick(DATA.config || {}, [
+      "Clave acceso líder",
+      "Clave acceso lider",
+      "Código líder",
+      "Codigo líder",
+      "codigoLider",
+      "Código"
+    ]) || "CHILOE2026";
+
+  if(pin === String(codigo).trim()){
+    liderActivo = true;
+    document.getElementById("loginLider").classList.add("hidden");
+    document.getElementById("panelLider").classList.remove("hidden");
+    document.getElementById("loginError").textContent = "";
+  }else{
+    document.getElementById("loginError").textContent = "Código incorrecto";
+  }
+}
+
+function abrirModulo(modulo){
+  const panel = document.getElementById("liderModuloView");
+  const titulo = document.getElementById("liderModuloTitulo");
+  const contenido = document.getElementById("liderModuloContenido");
+
+  const d = normalizarDashboard(DATA.dashboard || {});
+  const equipo = normalizarEquipo(DATA.equipo || []);
+
+  panel.classList.remove("hidden");
+
+  if(modulo === "registrarRuta"){
+    titulo.textContent = "REGISTRAR RUTA";
+    contenido.innerHTML = formularioRuta();
+  }
+
+  if(modulo === "planes"){
+    titulo.textContent = "PLANES DE ACCIÓN";
+    contenido.innerHTML = formularioPlan(equipo);
+  }
+
+  if(modulo === "bitacora"){
+    titulo.textContent = "BITÁCORA DEL MES";
+    contenido.innerHTML = formularioBitacora(equipo);
+  }
+
+  if(modulo === "metas"){
+    titulo.textContent = "METAS Y CUMPLIMIENTO";
+    contenido.innerHTML = `
+      <div class="module-card">
+        <h3>🎯 METAS Y CUMPLIMIENTO</h3>
+        <p><strong>PP Actual:</strong> ${d.ppActual}</p>
+        <p><strong>Meta:</strong> ${d.metaGrupal}</p>
+        <p><strong>Avance:</strong> ${d.avanceMeta}</p>
+        <p><strong>FCST:</strong> ${d.proyeccion}</p>
+        <p><strong>GAP:</strong> ${d.gap}</p>
+      </div>
+    `;
+  }
+
+  if(modulo === "reembolsos"){
+    titulo.textContent = "REEMBOLSOS";
+    contenido.innerHTML = formularioReembolso(equipo);
+  }
+
+  if(modulo === "mes"){
+    titulo.textContent = "MES";
+    contenido.innerHTML = `
+      <div class="module-card">
+        <h3>📅 MES</h3>
+        <p><strong>Meta mensual:</strong> ${d.metaGrupal}</p>
+        <p><strong>PP actual:</strong> ${d.ppActual}</p>
+        <p><strong>Deberían llevar:</strong> ${d.deberianLlevar}</p>
+        <p><strong>Proyección:</strong> ${d.proyeccion}</p>
+        <p><strong>Estado:</strong> ${d.estado}</p>
+      </div>
+    `;
+  }
+}
+
+function cerrarModuloLider(){
+  document.getElementById("liderModuloView").classList.add("hidden");
