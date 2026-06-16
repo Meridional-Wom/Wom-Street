@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WOM Street Chiloé</title>
   <link rel="stylesheet" href="styles.css" />
-
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 
@@ -39,7 +38,7 @@
 
     <div class="brand">
       <h1>WOM STREET CHILOÉ</h1>
-      <span id="fechaActualizacion">Actualizado: --</span>
+      <span id="fechaActualizacion">--</span>
     </div>
 
     <button class="icon-btn white" onclick="cargarDatos()">↻</button>
@@ -109,11 +108,8 @@
       <div id="loginLider" class="login-card">
         <h2>LÍDER</h2>
         <p>Acceso privado</p>
-
         <input id="pinLider" type="password" placeholder="Código líder" />
-
         <button class="primary-btn full" onclick="validarLider()">Ingresar</button>
-
         <small id="loginError"></small>
       </div>
 
@@ -173,75 +169,65 @@
           </div>
           <span>›</span>
         </div>
-
-        <div id="moduloLider" class="module-box"></div>
       </div>
 
     </section>
 
   </main>
 
+  <section id="liderModuloView" class="lider-full hidden">
+    <div class="lider-full-head">
+      <button onclick="cerrarModuloLider()">←</button>
+      <h2 id="liderModuloTitulo">LÍDER</h2>
+    </div>
+
+    <div id="liderModuloContenido" class="lider-full-content"></div>
+  </section>
+
   <div id="reportCanvas" class="report-canvas">
-    <div class="report-head">
-      <h1>WOM STREET CHILOÉ</h1>
-      <p id="reporteFecha">Actualizado: --</p>
+    <div class="report-top">
+      <div class="report-logo">📱</div>
+      <div>
+        <h1>WOM STREET CHILOÉ</h1>
+        <p id="reporteFecha">--</p>
+      </div>
     </div>
 
+    <div class="report-title">REPORTE COMERCIAL</div>
+
     <div class="report-section">
-      <h2>GESTIÓN DIARIA</h2>
-      <div class="report-grid">
-        <div>
-          <small>Ventas día</small>
-          <strong id="repVentasDia">0</strong>
-        </div>
-        <div>
-          <small>Meta día</small>
-          <strong id="repMetaDia">0</strong>
-        </div>
-        <div>
-          <small>Diferencia</small>
-          <strong id="repDiferencia">0</strong>
-        </div>
+      <h2>GESTIÓN DEL DÍA</h2>
+      <div class="report-kpis three">
+        <div><small>Ventas día</small><strong id="repVentasDia">0</strong></div>
+        <div><small>Meta día</small><strong id="repMetaDia">0</strong></div>
+        <div><small>Diferencia</small><strong id="repDiferencia">0</strong></div>
       </div>
     </div>
 
     <div class="report-section">
-      <h2>AVANCE MENSUAL</h2>
-      <div class="report-grid">
-        <div>
-          <small>PP Actual</small>
-          <strong id="repPP">0</strong>
-        </div>
-        <div>
-          <small>Meta</small>
-          <strong id="repMeta">0</strong>
-        </div>
-        <div>
-          <small>Avance</small>
-          <strong id="repAvance">0%</strong>
-        </div>
-        <div>
-          <small>FCST</small>
-          <strong id="repFCST">0%</strong>
-        </div>
-        <div>
-          <small>GAP</small>
-          <strong id="repGap">0</strong>
-        </div>
-        <div>
-          <small>Estado</small>
-          <strong id="repEstado">--</strong>
-        </div>
+      <h2>AVANCE MENSUAL GRUPAL</h2>
+      <div class="report-kpis three">
+        <div><small>PP actual</small><strong id="repPP">0</strong></div>
+        <div><small>Meta</small><strong id="repMeta">0</strong></div>
+        <div><small>Avance</small><strong id="repAvance">0%</strong></div>
+        <div><small>FCST</small><strong id="repFCST">0%</strong></div>
+        <div><small>GAP</small><strong id="repGap">0</strong></div>
+        <div><small>Estado</small><strong id="repEstado">--</strong></div>
       </div>
     </div>
 
     <div class="report-section">
-      <h2>VENTAS DEL DÍA</h2>
+      <h2>VENTAS DEL DÍA POR EJECUTIVO</h2>
       <div id="repVentasEjecutivos" class="report-list"></div>
     </div>
 
+    <div class="report-section">
+      <h2>AVANCE INDIVIDUAL</h2>
+      <div id="repAvanceIndividual" class="report-individual"></div>
+    </div>
+
     <div class="report-footer">
-      Generado automáticamente
+      WOM STREET CHILOÉ · Reporte generado automáticamente
     </div>
   </div>
 
